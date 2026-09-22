@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>Юный садовник</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+:root{
+  --sky:#a8daf0; --ink:#24331f; --ink-2:#56664e; --panel:#fffdf4; --panel-2:#eef4dd; --line:#dfe8cc;
+  --sun:#f2b33d; --sun-deep:#d98a1c; --water:#2f8fd6; --leaf:#4e9a3f; --danger:#c8452f;
+  --display:'Balsamiq Sans','Comic Sans MS','Trebuchet MS',sans-serif;
+  --body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--body);overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+
+.hud{position:fixed;top:0;left:0;right:0;z-index:2;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 0;pointer-events:none}
+.stack{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pill{background:var(--panel);border-radius:14px;padding:7px 11px;box-shadow:0 2px 0 rgba(36,51,31,.14);pointer-events:auto}
+.lvl{width:min(236px,calc(100vw - 176px))}
+.lvl-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lvl-name{font:700 17px/1.1 var(--display)}
+.lvl-count{font:700 13px/1 var(--display);color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{height:8px;border-radius:5px;background:var(--line);margin-top:6px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--leaf),#7cc75a);border-radius:5px;transition:width .5s ease}
+.lvl-next{font:600 11.5px/1.25 var(--body);color:var(--ink-2);margin-top:5px}
+.water{display:flex;align-items:center;gap:3px;align-self:flex-start;padding:6px 10px}
+.water svg{width:13px;height:16px;display:block}
+.water .d{fill:#cfdde6;transition:fill .2s}
+.water .d.on{fill:var(--water)}
+.water b{font:800 12.5px/1 var(--body);color:var(--water);margin-left:4px}
+.water.nudge{animation:nudge .5s ease 2}
+@keyframes nudge{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.btns{display:flex;gap:6px;pointer-events:auto}
+.round{width:38px;height:38px;border-radius:50%;border:0;background:var(--panel);box-shadow:0 2px 0 rgba(36,51,31,.14);color:var(--ink);font:700 19px/1 var(--display);display:grid;place-items:center;cursor:pointer;padding:0}
+.round svg{width:20px;height:20px;display:block}
+.side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:auto}
+.helper{display:flex;align-items:center;gap:6px;border:0;cursor:pointer;color:var(--ink);font:700 13px/1 var(--body);padding:4px 10px 4px 5px;border-radius:14px}
+.helper svg{width:28px;height:28px;display:block;flex:none}
+.helper .hl{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.pips{display:flex;gap:3px}
+.pip{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.pip.on{background:#3a8a48}
+.helper[aria-disabled="true"]{color:var(--ink-2)}
+.helper[aria-disabled="true"] svg{filter:grayscale(.7);opacity:.7}
+.helper.pop{animation:pop .6s cubic-bezier(.3,1.6,.5,1)}
+.helper .hl span:first-child{white-space:nowrap}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:2;padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);overflow-x:auto;scrollbar-width:none}
+.bar::-webkit-scrollbar{display:none}
+.row{display:flex;gap:6px;width:max-content;margin:0 auto}
+.seed{width:60px;border:2px solid transparent;border-radius:14px;background:var(--panel);box-shadow:0 2px 0 rgba(36,51,31,.14);display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 5px;font:700 12px/1.1 var(--body);color:var(--ink);cursor:pointer}
+.seed canvas{width:44px;height:44px;display:block}
+.seed[aria-pressed="true"]{border-color:var(--sun);background:#fff3d2}
+.seed:disabled{cursor:default;color:var(--ink-2);background:#f4f5ec}
+.seed:disabled canvas{filter:grayscale(1) opacity(.4)}
+.seed small{font:700 10px/1 var(--body);color:var(--ink-2)}
+button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
+
+.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 124px);transform:translate(-50%,-6px);width:max-content;max-width:min(340px,calc(100% - 32px));background:var(--ink);color:var(--panel);padding:9px 14px;border-radius:12px;font:700 14px/1.3 var(--body);text-align:center;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:3}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.banner{position:fixed;left:50%;top:40%;z-index:4;transform:translate(-50%,-50%) scale(.8);opacity:0;width:max-content;max-width:calc(100% - 32px);background:var(--panel);border-radius:20px;padding:14px 24px 16px;text-align:center;box-shadow:0 5px 0 rgba(36,51,31,.18);pointer-events:none;transition:opacity .3s,transform .35s cubic-bezier(.3,1.6,.5,1)}
+.banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.banner em{display:block;font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);font-style:normal}
+.banner b{display:block;font:700 30px/1.1 var(--display);margin-top:6px}
+.banner span{display:block;margin-top:6px;font-weight:700;color:var(--leaf)}
+
+.overlay{position:fixed;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(36,51,31,.38)}
+.card{width:min(360px,100%);max-height:100%;overflow:auto;background:var(--panel);border-radius:22px;padding:22px 20px 18px;box-shadow:0 6px 0 rgba(36,51,31,.2)}
+.card h1,.card h2{font:700 34px/1 var(--display);margin:0 0 6px;text-wrap:balance}
+.card h2{font-size:26px}
+.kicker{margin:0 0 8px;font:800 12px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--leaf)}
+.lead{margin:0 0 16px;color:var(--ink-2);font-weight:700;font-size:15px}
+.rules{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:10px}
+.rules li{display:grid;grid-template-columns:36px 1fr;gap:10px;align-items:center;font-weight:600;font-size:15px;line-height:1.3}
+.rules .ic{width:36px;height:36px;border-radius:11px;background:var(--panel-2);display:grid;place-items:center}
+.rules .ic svg{width:22px;height:22px}
+.cta{width:100%;border:0;border-radius:14px;background:var(--sun);color:var(--ink);font:700 21px/1 var(--display);padding:14px;box-shadow:0 4px 0 var(--sun-deep);cursor:pointer}
+.cta:active{transform:translateY(2px);box-shadow:0 2px 0 var(--sun-deep)}
+.ghost{width:100%;margin-top:10px;border:2px solid var(--line);background:transparent;border-radius:14px;padding:10px;font:700 14px/1 var(--body);color:var(--ink-2);cursor:pointer}
+.ghost.danger{border-color:var(--danger);color:var(--danger)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<canvas id="game" aria-label="Игровое поле: нажми на траву, чтобы посадить растение"></canvas>
+
+<div class="hud">
+  <div class="stack">
+    <div class="pill lvl">
+      <div class="lvl-top"><span class="lvl-name" id="lvlName">Огород</span><span class="lvl-count" id="lvlCount">0 / 3</span></div>
+      <div class="track"><div class="fill" id="lvlFill"></div></div>
+      <div class="lvl-next" id="lvlNext">Вырасти 3 растения</div>
+    </div>
+    <div class="pill water" id="water" aria-label="Вода в лейке"></div>
+  </div>
+  <div class="side">
+    <div class="btns">
+      <button class="round" id="soundBtn" aria-label="Звук"></button>
+      <button class="round" id="helpBtn" aria-label="Как играть">?</button>
+    </div>
+    <button class="pill helper" id="helperBtn" type="button"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13.5" fill="#eef4dd"/><path d="M4 27c1-5.5 4.8-8 10-8s9 2.5 10 8z" fill="#3a8a48"/><rect x="4.5" y="23" width="19" height="1.8" fill="#e4ee5c"/><circle cx="14" cy="13" r="5.6" fill="#f5cda6"/><path d="M8.2 12.4a5.8 5.8 0 0 1 11.6 0z" fill="#2f7039"/><ellipse cx="20" cy="12.2" rx="3.4" ry="1.2" fill="#24592d"/><circle cx="13.3" cy="9.4" r="1" fill="#e4ee5c"/><circle cx="16.4" cy="13.8" r=".8" fill="#24331f"/><ellipse cx="16.6" cy="15.7" rx="1.8" ry=".7" fill="#7a5234"/></svg><span class="hl"><span>Помощь</span><span class="pips" id="helpPips"></span></span></button>
+  </div>
+</div>
+
+<nav class="bar" id="bar" aria-label="Что сажаем"><div class="row" id="seeds"></div></nav>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="banner" id="banner"><em id="bannerKicker">Новый уровень</em><b id="bannerTitle"></b><span id="bannerSub"></span></div>
+
+<div class="overlay" id="intro">
+  <div class="card">
+    <p class="kicker">Парки Видного</p>
+    <h1>Юный садовник</h1>
+    <p class="lead">Помоги мальчику превратить огород в настоящий парк.</p>
+    <ul class="rules">
+      <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21v-8" stroke="#4e9a3f" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="16" cy="10" rx="4.5" ry="2.4" fill="#6cc04a" transform="rotate(-30 16 10)"/><ellipse cx="8" cy="11" rx="4.2" ry="2.2" fill="#5ab13d" transform="rotate(30 8 11)"/><ellipse cx="12" cy="21.5" rx="6" ry="1.6" fill="#8b5e3c"/></svg></span>Нажми на траву — мальчик посадит дерево или куст</li>
+      <li><span class="ic"><svg viewBox="0 0 13 16"><path d="M6.5 1S1 7.6 1 11a5.5 5.5 0 0 0 11 0C12 7.6 6.5 1 6.5 1z" fill="#2f8fd6"/></svg></span>Нажми на саженец с капелькой — мальчик польёт его. Три полива — и растение выросло</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="10" ry="5.5" fill="#58ade0"/><path d="M6 13c2-1.5 4 1.5 6 0s4-1.5 6 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span>Вода кончилась? Нажми на пруд</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#e6ecef" stroke-width="3"/><path d="M12 3a9 9 0 0 1 8.5 12" fill="none" stroke="#d9412f" stroke-width="3" stroke-linecap="round"/><path d="M12 7.5S8.5 11.6 8.5 13.6a3.5 3.5 0 0 0 7 0c0-2-3.5-6.1-3.5-6.1z" fill="#d9412f"/></svg></span>Растение хочет пить каждые 30 секунд. Не польёшь целую минуту — оно завянет и станет меньше</li>
+      <li><span class="ic"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13.5" fill="#eef4dd"/><path d="M4 27c1-5.5 4.8-8 10-8s9 2.5 10 8z" fill="#3a8a48"/><rect x="4.5" y="23" width="19" height="1.8" fill="#e4ee5c"/><circle cx="14" cy="13" r="5.6" fill="#f5cda6"/><path d="M8.2 12.4a5.8 5.8 0 0 1 11.6 0z" fill="#2f7039"/><ellipse cx="20" cy="12.2" rx="3.4" ry="1.2" fill="#24592d"/><circle cx="13.3" cy="9.4" r="1" fill="#e4ee5c"/><circle cx="16.4" cy="13.8" r=".8" fill="#24331f"/><ellipse cx="16.6" cy="15.7" rx="1.8" ry=".7" fill="#7a5234"/></svg></span>Не успеваешь? Нажми «Помощь» — придёт сотрудник парка и польёт 5 растений</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="10.8" y="13" width="2.4" height="9" rx="1" fill="#7a5234"/><circle cx="12" cy="9" r="6" fill="#3f8a3a"/><circle cx="7.5" cy="12" r="4" fill="#3f8a3a"/><circle cx="16.5" cy="12" r="4" fill="#3f8a3a"/><circle cx="10.5" cy="7.5" r="3" fill="#56a847"/></svg></span>Чем больше выросло — тем больше новых деревьев откроется</li>
+    </ul>
+    <button class="cta" id="playBtn">Играть</button>
+  </div>
+</div>
+
+<div class="overlay" id="help" hidden>
+  <div class="card">
+    <p class="kicker">Парки Видного</p>
+    <h2>Как играть</h2>
+    <ul class="rules">
+      <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21v-8" stroke="#4e9a3f" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="16" cy="10" rx="4.5" ry="2.4" fill="#6cc04a" transform="rotate(-30 16 10)"/><ellipse cx="8" cy="11" rx="4.2" ry="2.2" fill="#5ab13d" transform="rotate(30 8 11)"/></svg></span>Выбери растение внизу и нажми на свободное место на траве</li>
+      <li><span class="ic"><svg viewBox="0 0 13 16"><path d="M6.5 1S1 7.6 1 11a5.5 5.5 0 0 0 11 0C12 7.6 6.5 1 6.5 1z" fill="#2f8fd6"/></svg></span>Капелька над саженцем — пора поливать. Кружок вокруг неё — сколько осталось до увядания (минута)</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="13" rx="10" ry="5.5" fill="#58ade0"/><path d="M6 13c2-1.5 4 1.5 6 0s4-1.5 6 0" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span>В лейке 6 капель — набирай воду в пруду</li>
+      <li><span class="ic"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13.5" fill="#eef4dd"/><path d="M4 27c1-5.5 4.8-8 10-8s9 2.5 10 8z" fill="#3a8a48"/><rect x="4.5" y="23" width="19" height="1.8" fill="#e4ee5c"/><circle cx="14" cy="13" r="5.6" fill="#f5cda6"/><path d="M8.2 12.4a5.8 5.8 0 0 1 11.6 0z" fill="#2f7039"/><ellipse cx="20" cy="12.2" rx="3.4" ry="1.2" fill="#24592d"/><circle cx="13.3" cy="9.4" r="1" fill="#e4ee5c"/><circle cx="16.4" cy="13.8" r=".8" fill="#24331f"/><ellipse cx="16.6" cy="15.7" rx="1.8" ry=".7" fill="#7a5234"/></svg></span>«Помощь» — сотрудник парка польёт 5 растений. Новая помощь — за каждые 5 посаженных растений или 5 минут игры (не больше 3)</li>
+      <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="10.8" y="13" width="2.4" height="9" rx="1" fill="#7a5234"/><circle cx="12" cy="9" r="6" fill="#3f8a3a"/><circle cx="7.5" cy="12" r="4" fill="#3f8a3a"/><circle cx="16.5" cy="12" r="4" fill="#3f8a3a"/></svg></span>Уровни: Огород → Садик → Сквер → Роща → Сад → Парк. В парке включится автополив и заработает фонтан!</li>
+    </ul>
+    <button class="cta" id="resumeBtn">Продолжить</button>
+    <button class="ghost" id="resetBtn">Начать заново</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- Telegram Mini App (если игра открыта внутри Telegram) ---------- */
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { try { tg.ready(); tg.expand(); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+  if (tg.setHeaderColor) tg.setHeaderColor('#a8daf0'); if (tg.setBackgroundColor) tg.setBackgroundColor('#a8daf0'); } catch(e){} }
+if (!CanvasRenderingContext2D.prototype.roundRect) CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h){ this.rect(x,y,w,h); };
+const RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+/* ---------- Данные игры ---------- */
+const TYPES = {
+  oak:   {name:'Дуб',    unlock:0,  dim:[70,118], r:17},
+  bush:  {name:'Куст',   unlock:0,  dim:[62,46],  r:15},
+  spruce:{name:'Ель',    unlock:3,  dim:[58,128], r:16},
+  lilac: {name:'Сирень', unlock:8,  dim:[62,52],  r:15},
+  birch: {name:'Берёза', unlock:15, dim:[52,132], r:15},
+  apple: {name:'Яблоня', unlock:25, dim:[74,102], r:17}
+};
+const ORDER = ['oak','bush','spruce','lilac','birch','apple'];
+const LEVELS = [{at:0,name:'Огород'},{at:3,name:'Садик'},{at:8,name:'Сквер'},{at:15,name:'Роща'},{at:25,name:'Сад'},{at:40,name:'Парк'}];
+const THIRST_IN = 30, WILT_AFTER = 60;   // через 30 с снова хочет пить; без полива 60 с — откат на стадию назад
+const HELP_MAX = 3, HELP_EVERY_PLANTS = 5, HELP_EVERY_SEC = 300, HELP_WATERS = 5;
+const WATER_MAX = 6, GROW = 2.4, KEY = 'yuny-sadovnik-v1', MAX_PLANTS = 160;
+
+function fresh(){ return {plants:[], grown:0, water:WATER_MAX, sel:'oak', tips:{}, nextId:1, sound:true, boy:{xn:.5,yn:.55}, helps:HELP_MAX, planted:0, playT:0}; }
+let S = fresh();
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.plants)) S = Object.assign(fresh(), s); } catch(e){}
+S.plants.forEach(p => { if (p.waitT == null) p.waitT = 0; if (p.thirstT == null) p.thirstT = 0; p.helper = false; });
+if (!S.planted) S.planted = S.plants.length;
+const hadSave = S.plants.length > 0;
+let dirty = false, saveClock = 0;
+function save(){ S.boy = {xn:B.xn, yn:B.yn}; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} dirty = false; }
+
+const levelOf = n => { let i = 0; LEVELS.forEach((l,j)=>{ if (n >= l.at) i = j; }); return i; };
+const isPark = () => S.grown >= LEVELS[LEVELS.length - 1].at;
+const isOpen = t => S.grown >= TYPES[t].unlock;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function hs(s,i){ const x = Math.sin(s*127.1 + i*311.7)*43758.5453; return (x - Math.floor(x))*2 - 1; }
+
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const cv = $('game'), bar = $('bar');
+let c = cv.getContext('2d');
+
+/* ---------- Геометрия ---------- */
+let W=0, H=0, DPR=1, u=1, gTop=0, gBot=0, land=null;
+const PADX = 18;
+const X  = xn => PADX + xn*(W - 2*PADX);
+const Y  = yn => gTop + 22*u + yn*(gBot - gTop - 22*u);
+const XN = x => clamp((x - PADX)/(W - 2*PADX), 0, 1);
+const YN = y => clamp((y - gTop - 22*u)/(gBot - gTop - 22*u), 0, 1);
+const ds = yn => 0.72 + 0.4*yn;
+
+function layout(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = cv.clientWidth || innerWidth; H = cv.clientHeight || innerHeight;
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  const barTop = bar.getBoundingClientRect().top || H - 90;
+  gTop = Math.round(H*0.34);
+  gBot = Math.max(gTop + 150, barTop - 10);
+  u = clamp(Math.min(W/420, (gBot - gTop)/430), 0.72, 1.5);
+  buildLand();
+}
+
+/* ---------- Мальчик ---------- */
+const B = {xn:S.boy.xn, yn:S.boy.yn, dir:1, phase:0, walking:false, target:null, queued:null, act:null, actT:0};
+
+/* ---------- Звук и вибрация ---------- */
+let ac = null;
+function audio(){ if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ ac = null; } } if (ac && ac.state === 'suspended') ac.resume(); return ac; }
+function tone(f, dur, type, vol, delay, slide){
+  const a = ac; if (!a) return; const t0 = a.currentTime + (delay||0);
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, t0);
+  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + dur);
+  g.gain.setValueAtTime(vol || .1, t0); g.gain.exponentialRampToValueAtTime(.0008, t0 + dur);
+  o.connect(g); g.connect(a.destination); o.start(t0); o.stop(t0 + dur + .03);
+}
+function sfx(n){
+  if (!S.sound || !audio()) return;
+  try {
+    if (n==='plant'){ tone(190,.14,'triangle',.16,0,90); tone(130,.12,'triangle',.1,.07,70); }
+    else if (n==='water'){ for (let i=0;i<5;i++) tone(900 - i*60 + Math.random()*80,.07,'sine',.05,i*.1,500); }
+    else if (n==='stage'){ tone(523,.1,'sine',.09); tone(659,.14,'sine',.09,.08); }
+    else if (n==='grown'){ [523,659,784,1047].forEach((f,i)=>tone(f,.18,'triangle',.1,i*.08)); }
+    else if (n==='refill'){ for (let i=0;i<3;i++) tone(260+i*40,.16,'sine',.09,i*.12,720); }
+    else if (n==='level'){ [392,523,659,784,1047,1319].forEach((f,i)=>tone(f,.22,'square',.045,i*.09)); }
+    else if (n==='rustle'){ for (let i=0;i<4;i++) tone(1400+Math.random()*600,.05,'triangle',.025,i*.05,900); }
+    else if (n==='tap'){ tone(700,.05,'sine',.05); }
+    else if (n==='thirst'){ tone(880,.08,'sine',.035); tone(740,.1,'sine',.03,.09); }
+    else if (n==='wilt'){ tone(330,.25,'triangle',.08,0,160); tone(250,.3,'triangle',.06,.18,120); }
+    else if (n==='helper'){ tone(1250,.09,'sine',.07); tone(1650,.16,'sine',.07,.11); tone(1250,.09,'sine',.05,.3); tone(1650,.2,'sine',.05,.41); }
+    else if (n==='gain'){ [659,880,1175].forEach((f,i)=>tone(f,.14,'triangle',.07,i*.07)); }
+    else if (n==='no'){ tone(220,.1,'square',.04); tone(180,.12,'square',.04,.09); }
+  } catch(e){}
+}
+function buzz(kind){
+  try {
+    if (tg && tg.HapticFeedback) { kind === 'ok' ? tg.HapticFeedback.notificationOccurred('success') : tg.HapticFeedback.impactOccurred(kind || 'light'); }
+    else if (navigator.vibrate) navigator.vibrate(kind === 'ok' ? [15,40,15] : 8);
+  } catch(e){}
+}
+
+/* ---------- Подсказки и баннеры ---------- */
+let toastTimer = 0;
+function toast(msg, ms){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), ms || 2400); }
+function tip(key, msg){ if (S.tips[key]) return; S.tips[key] = 1; dirty = true; setTimeout(()=>toast(msg, 3600), 250); }
+let bannerTimer = 0;
+function banner(kicker, title, sub){
+  $('bannerKicker').textContent = kicker; $('bannerTitle').textContent = title; $('bannerSub').textContent = sub || '';
+  const b = $('banner'); b.classList.add('show'); clearTimeout(bannerTimer); bannerTimer = setTimeout(()=>b.classList.remove('show'), 3000);
+}
+
+/* ---------- HUD ---------- */
+const DROP = '<svg viewBox="0 0 13 16"><path class="d" d="M6.5 1S1 7.6 1 11a5.5 5.5 0 0 0 11 0C12 7.6 6.5 1 6.5 1z"/></svg>';
+$('water').innerHTML = DROP.repeat(WATER_MAX);
+function plural(n){ const a = n%10, b = n%100; if (a===1 && b!==11) return 'растение'; if (a>=2 && a<=4 && (b<12 || b>14)) return 'растения'; return 'растений'; }
+function hud(){
+  const L = levelOf(S.grown), next = LEVELS[L+1], cur = LEVELS[L];
+  $('lvlName').textContent = cur.name;
+  if (next){
+    $('lvlCount').textContent = S.grown + ' / ' + next.at;
+    $('lvlFill').style.width = Math.round((S.grown - cur.at)/(next.at - cur.at)*100) + '%';
+    const left = next.at - S.grown;
+    $('lvlNext').textContent = 'Вырасти ещё ' + left + ' ' + plural(left) + ' до «' + next.name + '»';
+  } else {
+    $('lvlCount').textContent = S.grown;
+    $('lvlFill').style.width = '100%';
+    $('lvlNext').textContent = 'Парк посажен! Сажай дальше';
+  }
+  const wEl = $('water');
+  if (isPark() && !wEl.dataset.auto){ wEl.dataset.auto = '1'; wEl.innerHTML = DROP + '<b>Автополив</b>'; }
+  if (!isPark() && wEl.dataset.auto){ delete wEl.dataset.auto; wEl.innerHTML = DROP.repeat(WATER_MAX); }
+  wEl.querySelectorAll('.d').forEach((d,i)=>d.classList.toggle('on', isPark() || i < S.water));
+  $('water').setAttribute('aria-label', 'Вода в лейке: ' + S.water + ' из ' + WATER_MAX);
+}
+function soundIcon(){
+  $('soundBtn').innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#24331f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="#24331f"/>' +
+    (S.sound ? '<path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>' : '<path d="M16 9.5l5 5M21 9.5l-5 5"/>') + '</svg>';
+  $('soundBtn').setAttribute('aria-label', S.sound ? 'Выключить звук' : 'Включить звук');
+}
+
+/* ---------- Панель растений ---------- */
+const seedBtns = {};
+function buildSeeds(){
+  const row = $('seeds'); row.innerHTML = '';
+  ORDER.forEach(t=>{
+    const b = document.createElement('button'); b.className = 'seed'; b.id = 'seed-' + t; b.type = 'button';
+    const ic = document.createElement('canvas'); ic.width = 88; ic.height = 88;
+    const lab = document.createElement('span'); lab.textContent = TYPES[t].name;
+    const sm = document.createElement('small');
+    b.append(ic, lab, sm); row.appendChild(b); seedBtns[t] = {b, sm};
+    const saved = c; c = ic.getContext('2d'); c.setTransform(2,0,0,2,0,0);
+    const tall = TYPES[t].dim[1] > 90, k = tall ? 0.31 : 0.6;
+    DRAW[t](22, 42, k, 1, 3, 0); c = saved;
+    b.addEventListener('click', ()=>{ if (!isOpen(t)) return; S.sel = t; dirty = true; sfx('tap'); refreshSeeds(); });
+  });
+  refreshSeeds();
+}
+function refreshSeeds(){
+  ORDER.forEach(t=>{
+    const {b, sm} = seedBtns[t], open = isOpen(t);
+    b.disabled = !open; b.setAttribute('aria-pressed', String(open && S.sel === t));
+    sm.textContent = open ? '' : 'с ' + TYPES[t].unlock;
+    sm.hidden = open;
+  });
+}
+
+/* ---------- Рисование: примитивы ---------- */
+function circ(x,y,r,col){ c.fillStyle = col; c.beginPath(); c.arc(x,y,Math.max(.1,r),0,Math.PI*2); c.fill(); }
+function ell(x,y,rx,ry,col){ c.fillStyle = col; c.beginPath(); c.ellipse(x,y,Math.max(.1,rx),Math.max(.1,ry),0,0,Math.PI*2); c.fill(); }
+function blobs(cx,cy,R,list,col,s){ c.fillStyle = col; c.beginPath(); list.forEach((b,i)=>{ const j = s ? hs(s,i)*.08 : 0; const x = cx + (b[0]+j)*R, y = cy + (b[1]-j)*R, r = b[2]*R; c.moveTo(x+r,y); c.arc(x,y,Math.max(.1,r),0,Math.PI*2); }); c.fill(); }
+function leaf(x,y,r,a,col){ c.save(); c.translate(x,y); c.rotate(a); ell(r*.6,0,r*.7,r*.34,col); c.restore(); }
+function drop(x,y,r,col){ c.fillStyle = col; c.beginPath(); c.moveTo(x,y-r*1.45); c.bezierCurveTo(x+r*1.15,y-r*.2,x+r,y+r,x,y+r); c.bezierCurveTo(x-r,y+r,x-r*1.15,y-r*.2,x,y-r*1.45); c.fill(); }
+function trunk(x,y,w,h,col){ c.fillStyle = col; c.beginPath(); c.moveTo(x-w/2,y); c.lineTo(x+w/2,y); c.lineTo(x+w*.32,y-h); c.lineTo(x-w*.32,y-h); c.closePath(); c.fill(); }
+
+function sprout(x,y,k,sw){
+  c.strokeStyle = '#4f8f3a'; c.lineWidth = 2.4*k; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(x,y); c.quadraticCurveTo(x+sw*.3,y-7*k,x+sw*.6,y-13*k); c.stroke();
+  leaf(x+sw*.6,y-12*k,8*k,-.55,'#6cc04a'); leaf(x+sw*.6,y-10*k,7*k,Math.PI+.55,'#5ab13d');
+}
+
+/* ---------- Рисование: растения ---------- */
+const DRAW = {
+  oak(x,y,k,f,s,sw){
+    const h = 118*k*f; trunk(x,y,Math.max(2,10*k*f),h*.58,'#7a5234');
+    const cx = x + sw*f, cy = y - h*.66, R = 36*k*f;
+    blobs(cx,cy,R,[[0,0,1],[-.64,.28,.72],[.64,.28,.72],[-.34,-.44,.72],[.38,-.4,.7],[0,.42,.7]],'#3f8a3a',s);
+    blobs(cx-R*.18,cy-R*.22,R*.8,[[0,0,.82],[-.5,.12,.56],[.42,-.22,.56]],'#56a847',s+1);
+    blobs(cx-R*.3,cy-R*.5,R,[[0,0,.13],[.34,-.1,.09],[-.3,.3,.08]],'#7cc75a');
+  },
+  apple(x,y,k,f,s,sw){
+    const h = 100*k*f; trunk(x,y,Math.max(2,10*k*f),h*.5,'#6d4a30');
+    const cx = x + sw*f, cy = y - h*.64, R = 37*k*f;
+    blobs(cx,cy,R,[[0,0,1],[-.7,.2,.68],[.7,.2,.68],[0,.38,.72]],'#4c9a3e',s);
+    blobs(cx-R*.2,cy-R*.25,R*.75,[[0,0,.8],[-.45,.2,.5],[.45,-.1,.5]],'#63b14f',s+2);
+    if (f > .85) for (let i=0;i<7;i++){ const ax = cx + hs(s,i+10)*R*.8, ay = cy + hs(s,i+20)*R*.55; circ(ax,ay,3.6*k,'#e0483c'); circ(ax-1*k,ay-1.1*k,1.1*k,'#f4907f'); }
+  },
+  spruce(x,y,k,f,s,sw){
+    const h = 128*k*f, w = 60*k*f;
+    c.fillStyle = '#6d4a30'; c.fillRect(x-3*k*f, y-h*.16, 6*k*f, h*.16);
+    for (let i=0;i<4;i++){
+      const ty = y - h*.12 - i*h*.2, tw = w*(1 - i*.2), tip = ty - h*.36, dx = sw*f*(i/3);
+      c.fillStyle = i%2 ? '#3a7f53' : '#2e6b45';
+      c.beginPath(); c.moveTo(x-tw/2+dx*.4,ty); c.lineTo(x+tw/2+dx*.4,ty); c.lineTo(x+dx,tip); c.closePath(); c.fill();
+    }
+  },
+  birch(x,y,k,f,s,sw){
+    const h = 132*k*f, tw = Math.max(2,6.5*k*f);
+    c.fillStyle = '#f3f1ea'; c.fillRect(x-tw/2, y-h*.78, tw, h*.78);
+    c.fillStyle = '#2d2d2a';
+    for (let i=0;i<6;i++){ const yy = y - h*(.08 + i*.12) + hs(s,i)*3*k; c.fillRect(x - tw/2 + (i%2 ? tw*.3 : 0), yy, tw*.55, Math.max(1,1.6*k*f)); }
+    const cx = x + sw*f, R = 18*k*f;
+    [[0,-.95,1.1],[-.8,-.72,.9],[.8,-.7,.9],[-.45,-.5,.85],[.5,-.48,.8],[0,-.62,.9]].forEach((p,i)=>{
+      ell(cx + p[0]*R + hs(s,i)*2*k, y - h*.52 + p[1]*h*.5, R*p[2]*.8, R*p[2]*1.05, i%2 ? '#a4d670' : '#86c35a');
+    });
+  },
+  bush(x,y,k,f,s,sw){
+    const R = 21*k*f, cx = x + sw*f*.4;
+    blobs(cx,y-R*.9,R,[[-.85,.3,.75],[.85,.3,.75],[0,0,1],[-.42,-.55,.7],[.45,-.5,.7]],'#3e8a45',s);
+    blobs(cx-R*.15,y-R*1.15,R*.7,[[0,0,.8],[-.62,.3,.5],[.6,.22,.5]],'#5aac4f',s+1);
+    if (f > .85) for (let i=0;i<5;i++) circ(cx + hs(s,i+3)*R*1.1, y - R*.9 + hs(s,i+9)*R*.5, 2.2*k, '#d94b4b');
+  },
+  lilac(x,y,k,f,s,sw){
+    const R = 21*k*f, cx = x + sw*f*.4;
+    blobs(cx,y-R*.9,R,[[-.85,.3,.75],[.85,.3,.75],[0,0,1],[-.42,-.55,.7],[.45,-.5,.7]],'#3f7f45',s);
+    blobs(cx-R*.15,y-R*1.15,R*.7,[[0,0,.8],[-.62,.3,.5],[.6,.22,.5]],'#54984f',s+1);
+    if (f > .5) for (let i=0;i<6;i++){
+      const px = cx + hs(s,i+30)*R*1.05, py = y - R*1.1 + hs(s,i+40)*R*.55, q = (f-.5)*2;
+      for (let j=0;j<4;j++) circ(px + (j%2 ? 2 : -2)*k, py - j*2.6*k, (4 - j*.7)*k*q, j%2 ? '#c9a6ea' : '#a77bd0');
+    }
+  }
+};
+
+/* ---------- Растения: логика ---------- */
+const growth = p => (p.stage + (p.growT > 0 ? 1 - p.growT/GROW : 0))/3;
+const fOf = g => g < .12 ? .2 : .22 + .78*(g - .12)/.88;
+function plantBox(p){
+  const x = X(p.xn), y = Y(p.yn), k = u*ds(p.yn), g = growth(p), f = fOf(g), d = TYPES[p.type].dim;
+  const w = Math.max(34, d[0]*k*f), h = g < .12 ? Math.max(34, 18*k) : Math.max(34, d[1]*k*f);
+  return {x, y, k, g, f, w, h};
+}
+function hit(p, px, py){ const b = plantBox(p); return px > b.x - b.w/2 && px < b.x + b.w/2 && py > b.y - b.h && py < b.y + 12; }
+function pond(){ const yn = .06, k = u*ds(yn), f = isPark(); return {x:X(.13), y:Y(yn), rx:(f ? 60 : 52)*k, ry:(f ? 18 : 15)*k, k}; }
+function inPond(x,y,pad){ const p = pond(); return ((x-p.x)/(p.rx+pad))**2 + ((y-p.y)/(p.ry+pad))**2 <= 1; }
+function spotFree(xn, yn, type){
+  if (S.plants.length >= MAX_PLANTS) return false;
+  const x = X(xn), y = Y(yn), k = u*ds(yn);
+  if (inPond(x, y, 14*k)) return false;
+  if (inSign(x, y, 12*k)) return false;
+  const r = TYPES[type].r*k;
+  for (const p of S.plants){
+    const dx = X(p.xn) - x, dy = (Y(p.yn) - y)*1.3;
+    if (Math.hypot(dx, dy) < r + TYPES[p.type].r*u*ds(p.yn)) return false;
+  }
+  return true;
+}
+
+/* ---------- Частицы ---------- */
+const P = [];
+function burst(x,y,n,cols,opt){
+  opt = opt || {};
+  for (let i=0;i<n;i++){
+    const a = (opt.a != null ? opt.a : -Math.PI/2) + (Math.random()-.5)*(opt.spread || 2.4), v = (opt.v || 90)*(0.5 + Math.random());
+    P.push({x, y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, g:opt.g != null ? opt.g : 260, life:opt.life || .7, max:opt.life || .7,
+      col:cols[i % cols.length], r:(opt.r || 2.6)*u*(0.6 + Math.random()*.8), kind:opt.kind || 'dot', rot:Math.random()*6});
+  }
+}
+function floatText(x,y,text){ P.push({x, y, vx:0, vy:-40, g:0, life:1.1, max:1.1, col:'#24331f', r:0, kind:'text', text}); }
+
+/* ---------- Действия ---------- */
+let marker = null, pondPulse = 0;
+function setTarget(t){
+  let fx, fy;
+  if (t.kind === 'plant'){ fx = X(t.xn); fy = Y(t.yn); }
+  else if (t.kind === 'water'){ fx = X(t.p.xn); fy = Y(t.p.yn); }
+  else { const pd = pond(); fx = pd.x; fy = pd.y; }
+  const k = u*ds(YN(fy)); let sx, sy = fy + 2;
+  if (t.kind === 'refill'){ const pd = pond(); sx = pd.x + pd.rx + 10*k; sy = pd.y + pd.ry*.4; }
+  else { const off = 20*k, bx = X(B.xn); sx = bx <= fx ? fx - off : fx + off; if (sx < PADX) sx = fx + off; if (sx > W - PADX) sx = fx - off; }
+  t.sxn = XN(sx); t.syn = YN(sy); t.fxn = XN(fx);
+  marker = {xn:XN(fx), yn:YN(fy), t:0};
+  if (B.act) B.queued = t; else B.target = t;
+  sfx('tap');
+}
+function emptyCan(){
+  toast('Лейка пустая — нажми на пруд, чтобы набрать воды'); pondPulse = 2.2; sfx('no'); buzz('light');
+  const w = $('water'); w.classList.remove('nudge'); void w.offsetWidth; w.classList.add('nudge');
+}
+function arrive(){
+  const t = B.target; B.target = null; B.walking = false;
+  const fd = Math.sign(t.fxn - B.xn); if (fd) B.dir = fd;
+  if (t.kind === 'plant'){
+    if (!spotFree(t.xn, t.yn, t.type)){ toast('Здесь уже занято — выбери другое место'); marker = null; return; }
+    B.act = {kind:'plant', t, dur:.65};
+  } else if (t.kind === 'water'){
+    const p = t.p; if (!S.plants.includes(p) || !p.thirsty){ marker = null; return; }
+    if (S.water <= 0){ emptyCan(); marker = null; return; }
+    B.act = {kind:'water', t, dur:.9}; sfx('water');
+  } else { B.act = {kind:'refill', t, dur:.8}; sfx('refill'); }
+  B.actT = B.act.dur;
+}
+function finishAct(){
+  const a = B.act; B.act = null; marker = null;
+  if (a.kind === 'plant'){
+    const p = {id:S.nextId++, type:a.t.type, xn:a.t.xn, yn:a.t.yn, stage:0, thirsty:true, growT:0, waitT:0, thirstT:0};
+    S.plants.push(p); sfx('plant'); buzz('light');
+    S.planted++; if (S.planted % HELP_EVERY_PLANTS === 0) gainHelp('за 5 посаженных растений');
+    burst(X(p.xn), Y(p.yn), 10, ['#8b5e3c','#a8764d','#6d4a30'], {v:70, life:.5});
+    tip('water', 'Саженец хочет пить — нажми на него, и мальчик польёт');
+  } else if (a.kind === 'water'){
+    const p = a.t.p;
+    if (S.plants.includes(p) && p.thirsty && S.water > 0){ S.water--; p.thirsty = false; p.thirstT = 0; p.growT = GROW; }
+    if (S.water === 0) tip('refill', 'Вода кончилась. Нажми на пруд — мальчик наберёт лейку');
+  } else {
+    S.water = WATER_MAX; const pd = pond();
+    burst(pd.x + pd.rx*.7, pd.y, 12, ['#8fd0f2','#58ade0','#ffffff'], {v:80, life:.55, r:2.2});
+  }
+  dirty = true; hud();
+  if (B.queued){ B.target = B.queued; B.queued = null; marker = {xn:B.target.fxn, yn:B.target.p ? B.target.p.yn : (B.target.yn != null ? B.target.yn : .06), t:0}; }
+}
+function grownEvent(p){
+  const before = levelOf(S.grown); S.grown++; const after = levelOf(S.grown);
+  const b = plantBox(p);
+  burst(b.x, b.y - b.h*.6, 16, ['#7cc75a','#56a847','#f2d24a','#ffffff'], {v:110, life:.9, spread:6.2, g:120, kind:'leaf', r:3.2});
+  floatText(b.x, b.y - b.h - 8, '+1'); sfx('grown'); buzz('medium');
+  tip('grown', 'Выросло! Сажай дальше — откроются новые деревья');
+  if (after > before){
+    const L = LEVELS[after], fresh = ORDER.filter(t => TYPES[t].unlock === L.at);
+    if (after === LEVELS.length - 1) { banner('Ура!', 'Парк посажен!', 'Включён автополив, построен фонтан!'); startParty(); }
+    else banner('Новый уровень', '«' + L.name + '»', fresh.length ? 'Открыто: ' + fresh.map(t => TYPES[t].name).join(', ') : '');
+    if (fresh.length) S.sel = fresh[0];
+    for (let i=0;i<5;i++) burst(W*(.15 + i*.175), H*.3, 14, ['#f2b33d','#e86f9a','#58ade0','#7cc75a','#ffffff'], {v:200, life:1.6, spread:2, g:220, kind:'leaf', r:3.4});
+    setTimeout(()=>sfx('level'), 250); buzz('ok'); refreshSeeds();
+  }
+  hud();
+}
+
+
+/* ---------- Сотрудник парка ---------- */
+const WK = {active:false, xn:1.1, yn:.5, dir:-1, phase:0, walking:false, act:null, actT:0, queue:[], cur:null, leaving:false, exitXn:1.1, tx:0, ty:0};
+const XU = x => (x - PADX)/(W - 2*PADX);   // как XN, но без ограничения — чтобы уходить за край экрана
+function helperHud(){
+  const btn = $('helperBtn');
+  $('helpPips').innerHTML = Array.from({length:HELP_MAX}, (_, i) => '<span class="pip' + (i < S.helps ? ' on' : '') + '"></span>').join('');
+  btn.setAttribute('aria-disabled', String(S.helps <= 0 || WK.active));
+  btn.classList.toggle('busy', WK.active);
+  btn.setAttribute('aria-label', 'Позвать сотрудника парка. Осталось вызовов: ' + S.helps + ' из ' + HELP_MAX);
+}
+function gainHelp(reason){
+  if (S.helps >= HELP_MAX) return;
+  S.helps++; dirty = true; helperHud(); sfx('gain');
+  const b = $('helperBtn'); b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  toast('+1 помощь сотрудника парка ' + reason);
+}
+function mmss(sec){ sec = Math.max(0, Math.ceil(sec)); return Math.floor(sec/60) + ':' + String(sec % 60).padStart(2, '0'); }
+function callHelper(){
+  if (!started) return;
+  audio();
+  if (WK.active){ toast('Сотрудник парка уже поливает'); return; }
+  if (S.helps <= 0){
+    const needPlants = HELP_EVERY_PLANTS - (S.planted % HELP_EVERY_PLANTS);
+    toast('Помощь закончилась. Новая — через ' + needPlants + ' ' + (needPlants === 1 ? 'посадку' : needPlants < 5 ? 'посадки' : 'посадок') + ' или через ' + mmss(HELP_EVERY_SEC - S.playT), 3400);
+    sfx('no'); return;
+  }
+  const cand = S.plants.filter(p => p.stage < 3 && p.growT <= 0);
+  if (!cand.length){ toast('Сейчас поливать нечего — сначала посади растения'); sfx('no'); return; }
+  // сначала те, кто вот-вот завянет, потом просто жаждущие, потом те, кому скоро захочется пить
+  const urgency = p => p.thirsty ? (p.stage > 0 ? 1000 + p.thirstT : 500 + p.thirstT) : -p.waitT;
+  cand.sort((a, b) => urgency(b) - urgency(a));
+  const pick = cand.slice(0, HELP_WATERS);
+  pick.forEach(p => p.helper = true);
+  // заходит с той стороны, где больше выбранных растений, и обходит их по ближайшему
+  const avg = pick.reduce((s, p) => s + p.xn, 0)/pick.length;
+  WK.exitXn = avg < .5 ? -.12 : 1.12;
+  WK.xn = WK.exitXn; WK.yn = clamp(pick[0].yn, .1, .9); WK.dir = WK.exitXn < 0 ? 1 : -1;
+  const route = []; let cx = WK.xn, cy = WK.yn, left = pick.slice();
+  while (left.length){ left.sort((a, b) => Math.hypot(a.xn - cx, (a.yn - cy)*.7) - Math.hypot(b.xn - cx, (b.yn - cy)*.7)); const n = left.shift(); route.push(n); cx = n.xn; cy = n.yn; }
+  WK.queue = route; WK.cur = null; WK.act = null; WK.leaving = false; WK.active = true;
+  S.helps--; dirty = true; helperHud();
+  toast('Сотрудник парка идёт на помощь!'); sfx('helper'); buzz('medium');
+}
+function workerNext(){
+  while (WK.queue.length){
+    const p = WK.queue.shift();
+    if (!S.plants.includes(p) || p.stage >= 3 || p.growT > 0){ p.helper = false; continue; }
+    WK.cur = p;
+    const k = u*ds(p.yn)*1.6, fx = X(p.xn), off = 16*k;
+    let sx = X(WK.xn) <= fx ? fx - off : fx + off;
+    if (sx < 6) sx = fx + off; if (sx > W - 6) sx = fx - off;
+    WK.tx = sx; WK.ty = Y(p.yn) + 3;
+    return;
+  }
+  WK.leaving = true; WK.tx = X(WK.exitXn); WK.ty = Y(WK.yn);
+}
+function updateWorker(dt){
+  if (!WK.active) return;
+  if (WK.act){
+    WK.actT -= dt;
+    const p = WK.cur, kb = u*ds(WK.yn)*1.6;
+    if (p && Math.random() < .9) P.push({x:X(WK.xn) + WK.dir*17*kb, y:Y(WK.yn) - 25*kb, vx:(X(p.xn) - X(WK.xn) - WK.dir*17*kb)*1.6 + (Math.random() - .5)*20, vy:-30 + Math.random()*20, g:420, life:.45, max:.45, col:'#58ade0', r:1.8*u, kind:'dot'});
+    if (WK.actT <= 0){
+      if (p && S.plants.includes(p) && p.stage < 3 && p.growT <= 0){
+        p.thirsty = false; p.thirstT = 0; p.waitT = 0; p.growT = GROW; dirty = true;
+        const b = plantBox(p); burst(b.x, b.y - b.h*.5, 8, ['#8fd0f2','#ffffff','#7cc75a'], {v:70, spread:5, g:120, kind:'leaf', life:.8});
+      }
+      if (p) p.helper = false;
+      WK.act = null; WK.cur = null;
+    }
+    return;
+  }
+  if (!WK.cur && !WK.leaving) workerNext();
+  const bx = X(WK.xn), by = Y(WK.yn), dx = WK.tx - bx, dy = WK.ty - by, d = Math.hypot(dx, dy), step = 230*u*dt;
+  if (d <= step){
+    WK.xn = XU(WK.tx); WK.yn = YN(WK.ty); WK.walking = false;
+    if (WK.leaving){ WK.active = false; helperHud(); return; }
+    const p = WK.cur;
+    if (!S.plants.includes(p) || p.stage >= 3 || p.growT > 0){ if (p) p.helper = false; WK.cur = null; return; }
+    WK.dir = Math.sign(X(p.xn) - X(WK.xn)) || WK.dir;
+    WK.act = {kind:'water', dur:.8}; WK.actT = .8; sfx('water');
+  } else {
+    WK.xn = XU(bx + dx/d*step); WK.yn = YN(by + dy/d*step); WK.walking = true;
+    if (Math.abs(dx) > 1) WK.dir = Math.sign(dx); WK.phase += dt*11;
+  }
+}
+
+
+/* ---------- Уровень «Парк»: фонтан, птицы, дети ---------- */
+function drawFountain(){
+  const p = pond(), k = p.k, cx = p.x, cy = p.y;
+  ell(cx, cy + 2*k, p.rx + 7*k, p.ry + 6*k, '#c9c2b2');
+  ell(cx, cy, p.rx + 5*k, p.ry + 4*k, '#e6e0d2');
+  ell(cx, cy + 1*k, p.rx, p.ry, '#4fa3d8');
+  ell(cx - p.rx*.25, cy - p.ry*.2, p.rx*.5, p.ry*.35, '#8fd0f2');
+  const top = cy - 26*k;
+  c.fillStyle = '#e6e0d2'; c.fillRect(cx - 4*k, top, 8*k, 26*k);
+  c.fillStyle = '#c9c2b2'; c.fillRect(cx - 4*k, top + 12*k, 8*k, 2*k);
+  ell(cx, top, 17*k, 5*k, '#d6cfbf'); ell(cx, top - 1*k, 14.5*k, 3.6*k, '#58ade0');
+  c.fillStyle = '#e6e0d2'; c.fillRect(cx - 2*k, top - 10*k, 4*k, 9*k); ell(cx, top - 10*k, 6*k, 2*k, '#d6cfbf');
+  const tt = RM ? .5 : T;
+  c.fillStyle = 'rgba(190,230,250,.9)';
+  for (let j = 0; j < 8; j++){                                   // струи из верхней чаши в бассейн
+    const a = j/8*Math.PI*2, ex = Math.cos(a)*p.rx*.72, ey = Math.sin(a)*p.ry*.72;
+    for (let s = 0; s < 7; s++){ const t = (tt*1.1 + s/7) % 1; const x = cx + Math.cos(a)*12*k + (ex - Math.cos(a)*12*k)*t, y = top - 2*k + (cy + ey - top + 2*k)*t - 16*k*4*t*(1 - t); c.beginPath(); c.arc(x, y, 1.5*k, 0, Math.PI*2); c.fill(); }
+  }
+  for (let s = 0; s < 9; s++){                                   // центральная струя
+    const t = (tt*1.3 + s/9) % 1, h = 38*k*4*t*(1 - t), side = s % 2 ? 1 : -1;
+    c.beginPath(); c.arc(cx + side*t*7*k, top - 10*k - h, 1.8*k, 0, Math.PI*2); c.fill();
+  }
+  c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1.4*k;
+  for (let i = 0; i < 3; i++){ const r = ((tt*.6 + i/3) % 1); c.globalAlpha = 1 - r; c.beginPath(); c.ellipse(cx, cy + 1*k, 16*k + r*(p.rx - 16*k), 5*k + r*(p.ry - 5*k), 0, 0, Math.PI*2); c.stroke(); }
+  c.globalAlpha = 1;
+}
+function drawBirds(){
+  if (!isPark()) return;
+  c.strokeStyle = '#3b4a5a'; c.lineCap = 'round'; c.lineJoin = 'round';
+  for (let i = 0; i < 7; i++){
+    const sp = .035 + (i % 3)*.012, t = (T*sp + i*.23) % 1.3, dirR = i % 2 ? 1 : -1;
+    const x = dirR > 0 ? (t - .15)*W : (1.15 - t)*W;
+    const y = 82 + (i*23) % Math.max(40, gTop - 110) + Math.sin(T*1.4 + i)*8*u;
+    const fl = RM ? .4 : Math.sin(T*9 + i*1.7), w = 7*u*(1 - (i % 3)*.15);
+    c.lineWidth = 1.7*u; c.beginPath();
+    c.moveTo(x - w, y - fl*4*u); c.quadraticCurveTo(x - w*.4, y - 3*u - fl*2*u, x, y); c.quadraticCurveTo(x + w*.4, y - 3*u - fl*2*u, x + w, y - fl*4*u); c.stroke();
+  }
+}
+const KID_LOOKS = [
+  {scale:1.05, legs:'#f2c49c', shoes:'#c0392b', shorts:'#e86f9a', shirt:'#ffffff', stripe:'#e86f9a', girl:true, hair:'#6b3e26', bow:'#e86f9a'},
+  {scale:1.1,  legs:'#f2c49c', shoes:'#3b2f2a', shorts:'#2f4f7a', shirt:'#58ade0', stripe:'#ffffff', cap:'#e0483c', visor:'#b3362c'},
+  {scale:1.0,  legs:'#f2c49c', shoes:'#5a3b2a', shorts:'#8a5cc2', shirt:'#c9a6ea', stripe:'#ffffff', girl:true, hair:'#e0b04a', bow:'#58ade0'},
+  {scale:1.08, legs:'#f2c49c', shoes:'#3b2f2a', shorts:'#3f6fb5', shirt:'#e0483c', stripe:'#ffffff', cap:'#f2b33d', visor:'#d98a1c'},
+  {scale:1.02, legs:'#f2c49c', shoes:'#c0392b', shorts:'#f2b33d', shirt:'#7cc75a', stripe:'#ffffff', girl:true, hair:'#3b2a20', bow:'#f2b33d'}
+];
+const KIDS = []; let ringA = 0;
+function startParty(){
+  if (KIDS.length) return;
+  for (let i = 0; i < 5; i++) KIDS.push({xn:i % 2 ? 1.12 : -.12, yn:.45 + i*.1, dir:i % 2 ? -1 : 1, phase:i, walking:true, act:null, actT:0, seed:i*1.3, slot:i*Math.PI*2/5, arrived:false, look:KID_LOOKS[i], dance:null});
+}
+function updateKids(dt){
+  if (!KIDS.length) return;
+  const circling = (T % 8) < 5;                                  // 5 с хоровод, 3 с прыгают на месте
+  if (circling) ringA += dt*.45;
+  const R = Math.min(64*u, W*.2), cx = X(.5), cy = Y(.8);
+  for (const kd of KIDS){
+    const a = kd.slot + ringA, tx = cx + Math.cos(a)*R, ty = cy + Math.sin(a)*R*.38;
+    if (!kd.arrived){
+      const bx = X(kd.xn), by = Y(kd.yn), dx = tx - bx, dy = ty - by, d = Math.hypot(dx, dy), step = 150*u*dt;
+      if (d <= Math.max(step, 3)){ kd.arrived = true; } else { kd.xn = XU(bx + dx/d*step); kd.yn = YN(by + dy/d*step); kd.dir = Math.sign(dx) || kd.dir; kd.phase += dt*12; kd.walking = true; continue; }
+    }
+    kd.xn = XU(tx); kd.yn = YN(ty);
+    if (circling){ kd.walking = true; kd.phase += dt*9; kd.dir = -Math.sin(a) >= 0 ? 1 : -1; kd.dance = 'wave'; }
+    else { kd.walking = false; kd.dance = 'jump'; kd.dir = Math.cos(a) > 0 ? -1 : 1; }
+  }
+}
+
+/* ---------- Нажатия ---------- */
+let started = false;
+function onTap(x, y){
+  if (!started) return;
+  audio();
+  if (inPond(x, y, 12)){ if (isPark()){ toast('Фонтан и автополив работают — поливать больше не нужно!'); sfx('tap'); return; } setTarget({kind:'refill'}); return; }
+  const sorted = S.plants.slice().sort((a,b) => b.yn - a.yn);
+  for (const p of sorted){
+    if (p.stage >= 3 || !hit(p, x, y)) continue;
+    if (p.growT > 0){ toast('Растёт! Подожди чуть-чуть'); return; }
+    if (!p.thirsty){ toast('Пока не хочет пить. Полить можно через ' + Math.ceil(p.waitT) + ' сек'); return; }
+    if (p.helper){ toast('Это растение польёт сотрудник парка'); return; }
+    if (p.thirsty){ if (S.water <= 0){ emptyCan(); return; } setTarget({kind:'water', p}); return; }
+  }
+  if (inSign(x, y, 0)){ toast('Добро пожаловать в Парки Видного!'); sfx('tap'); return; }
+  if (y >= gTop + 6 && y <= gBot + 8){
+    const xn = XN(x), yn = YN(y);
+    if (spotFree(xn, yn, S.sel)){ setTarget({kind:'plant', xn, yn, type:S.sel}); return; }
+  }
+  for (const p of sorted){
+    if (p.stage >= 3 && hit(p, x, y)){ p.shake = .6; const b = plantBox(p); burst(b.x, b.y - b.h*.6, 6, ['#7cc75a','#56a847'], {v:60, spread:6, g:90, kind:'leaf', life:1}); sfx('rustle'); return; }
+  }
+  if (y >= gTop + 6){ toast(S.plants.length >= MAX_PLANTS ? 'Места больше нет — парк полон!' : 'Тут тесно — выбери место посвободнее'); sfx('no'); }
+}
+cv.addEventListener('pointerdown', e => { const r = cv.getBoundingClientRect(); onTap(e.clientX - r.left, e.clientY - r.top); });
+
+/* ---------- Обновление ---------- */
+let T = 0;
+function update(dt){
+  T += dt;
+  if (B.act){
+    B.actT -= dt;
+    if (B.act.kind === 'water'){
+      const kb = u*ds(B.yn)*1.25, p = B.act.t.p;
+      if (Math.random() < .8) P.push({x:X(B.xn) + B.dir*17*kb, y:Y(B.yn) - 25*kb, vx:(X(p.xn) - X(B.xn) - B.dir*17*kb)*1.6 + (Math.random()-.5)*20, vy:-30 + Math.random()*20, g:420, life:.45, max:.45, col:'#58ade0', r:1.8*u, kind:'dot'});
+    }
+    if (B.act.kind === 'plant' && Math.random() < .25){ const kb = u*ds(B.yn)*1.25; burst(X(B.xn) + B.dir*14*kb, Y(B.yn), 2, ['#8b5e3c','#a8764d'], {v:60, life:.4}); }
+    if (B.actT <= 0) finishAct();
+  } else if (B.target){
+    const bx = X(B.xn), by = Y(B.yn), tx = X(B.target.sxn), ty = Y(B.target.syn);
+    const dx = tx - bx, dy = ty - by, d = Math.hypot(dx, dy), step = 175*u*dt;
+    if (d <= step){ B.xn = B.target.sxn; B.yn = B.target.syn; arrive(); }
+    else { B.xn = XN(bx + dx/d*step); B.yn = YN(by + dy/d*step); B.walking = true; if (Math.abs(dx) > 1) B.dir = Math.sign(dx); B.phase += dt*13; }
+  } else B.walking = false;
+
+  for (const p of S.plants){
+    if (p.shake > 0) p.shake = Math.max(0, p.shake - dt);
+    if (!started) continue;                       // пока открыто меню — время для растений стоит
+    if (p.growT > 0){
+      p.growT -= dt;
+      if (p.growT <= 0){
+        p.growT = 0; p.stage++;
+        if (p.stage >= 3){ p.stage = 3; grownEvent(p); }
+        else { p.waitT = THIRST_IN; sfx('stage'); }
+        dirty = true;
+      }
+    } else if (p.stage < 3 && !p.thirsty && p.waitT > 0){
+      p.waitT -= dt;
+      if (p.waitT <= 0){ p.waitT = 0; p.thirsty = true; p.thirstT = 0; dirty = true; sfx('thirst'); tip('helper', 'Не успеваешь поливать? Нажми «Помощь» вверху — придёт сотрудник парка'); }
+    } else if (p.stage < 3 && p.thirsty){
+      p.thirstT = (p.thirstT || 0) + dt;
+      if (isPark() && !p.helper && p.thirstT > .8){   // автополив
+        p.thirsty = false; p.thirstT = 0; p.growT = GROW; dirty = true;
+        burst(X(p.xn), Y(p.yn), 12, ['#8fd0f2','#58ade0','#ffffff'], {v:130, spread:1.1, g:420, life:.6, r:2});
+        continue;
+      }
+      if (p.thirstT >= WILT_AFTER){
+        p.thirstT = 0; dirty = true;
+        if (p.stage > 0){
+          p.stage--; p.shake = .6;
+          const b = plantBox(p);
+          burst(b.x, b.y - b.h*.5, 10, ['#b9a14a','#9c7a3c','#c9b25a'], {v:50, spread:5, g:120, kind:'leaf', life:1.2});
+          toast(TYPES[p.type].name + ' завял и стал меньше — полей его скорее!'); sfx('wilt'); buzz('medium');
+          tip('wilt', 'Поливай вовремя: без воды целую минуту растение вянет');
+        }
+      }
+    }
+  }
+  updateWorker(dt); updateKids(dt);
+  if (started){ S.playT += dt; if (S.playT >= HELP_EVERY_SEC){ S.playT -= HELP_EVERY_SEC; gainHelp('за 5 минут в парке'); } }
+  for (let i = P.length - 1; i >= 0; i--){ const q = P[i]; q.life -= dt; if (q.life <= 0){ P.splice(i,1); continue; } q.vy += q.g*dt; q.x += q.vx*dt; q.y += q.vy*dt; q.rot += dt*4; }
+  if (marker) marker.t += dt;
+  if (pondPulse > 0) pondPulse -= dt;
+  saveClock += dt; if (dirty && saveClock > 1.5){ saveClock = 0; save(); }
+}
+
+/* ---------- Фон ---------- */
+function rng(seed){ return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; }; }
+function buildLand(){
+  land = document.createElement('canvas'); land.width = Math.round(W*DPR); land.height = Math.round(H*DPR);
+  const saved = c; c = land.getContext('2d'); c.setTransform(DPR,0,0,DPR,0,0);
+  const hill = (amp, fq, ph, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(0, gTop + 2); for (let x = 0; x <= W + 8; x += 8) c.lineTo(x, gTop + 2 - amp*(.55 + .45*Math.sin(x*fq + ph))); c.lineTo(W, gTop + 4); c.lineTo(0, gTop + 4); c.closePath(); c.fill(); };
+  hill(48*u, .011/u, .6, '#c3e1a8');
+  const r0 = rng(3);
+  for (let x = 6; x < W; x += 9*u + r0()*10*u){ const hy = gTop + 2 - 48*u*(.55 + .45*Math.sin(x*.011/u + .6)); circ(x, hy + 3*u, (4 + r0()*3)*u, '#a6cf8c'); }
+  hill(26*u, .017/u, 2.1, '#a8d48d');
+  const gr = c.createLinearGradient(0, gTop, 0, H); gr.addColorStop(0, '#98d17b'); gr.addColorStop(1, '#6db659');
+  c.fillStyle = gr; c.fillRect(0, gTop, W, H - gTop);
+  const r = rng(7), n = Math.round(W*(H - gTop)/2600);
+  c.strokeStyle = '#5ea54b'; c.lineCap = 'round';
+  for (let i = 0; i < n; i++){
+    const x = r()*W, y = gTop + 8 + r()*(H - gTop), k = (.5 + (y - gTop)/(H - gTop)*.7)*u;
+    c.lineWidth = 1.4*k; c.beginPath(); c.moveTo(x - 3*k, y - 5*k); c.lineTo(x, y); c.lineTo(x + 3*k, y - 6*k); c.moveTo(x, y); c.lineTo(x + .5*k, y - 7*k); c.stroke();
+  }
+  for (let i = 0; i < Math.round(W/22); i++){
+    const x = r()*W, y = gTop + 14 + r()*(H - gTop - 20), k = (.5 + (y - gTop)/(H - gTop)*.6)*u, col = r() < .5 ? '#ffffff' : '#f7d65a';
+    for (let a = 0; a < 5; a++) circ(x + Math.cos(a*1.26)*2.2*k, y + Math.sin(a*1.26)*2.2*k, 1.6*k, col);
+    circ(x, y, 1.3*k, '#e39a2b');
+  }
+  c = saved;
+}
+const clouds = [{x:.08,y:.25,s:1,v:.010},{x:.52,y:.05,s:.8,v:.007},{x:.86,y:.5,s:1.15,v:.012}];
+function drawSky(){
+  const g = c.createLinearGradient(0, 0, 0, gTop); g.addColorStop(0, '#8fcdea'); g.addColorStop(1, '#dff2f2');
+  c.fillStyle = g; c.fillRect(0, 0, W, gTop + 4);
+  const sx = W*.8, sy = Math.max(gTop*.5, 90), sr = 24*u;
+  c.save(); c.translate(sx, sy); c.rotate(RM ? 0 : T*.15); c.strokeStyle = 'rgba(247,196,64,.55)'; c.lineWidth = 3*u; c.lineCap = 'round';
+  for (let i = 0; i < 10; i++){ c.rotate(Math.PI/5); c.beginPath(); c.moveTo(sr + 6*u, 0); c.lineTo(sr + 14*u, 0); c.stroke(); }
+  c.restore(); circ(sx, sy, sr, '#f7c440'); circ(sx - sr*.25, sy - sr*.25, sr*.55, '#fbd968');
+}
+function drawWheel(){
+  const R = 54*u, cx = W*.42, cy = gTop - 22*u - R, rot = RM ? 0 : T*.07;
+  const cols = ['#e86f5a','#f2b33d','#58ade0','#7cc75a','#c9a6ea','#f08cb0'];
+  c.lineCap = 'round';
+  c.strokeStyle = '#71849a'; c.lineWidth = 3.4*u;
+  c.beginPath(); c.moveTo(cx - R*.6, gTop + 6); c.lineTo(cx, cy); c.lineTo(cx + R*.6, gTop + 6); c.stroke();
+  c.lineWidth = 1.6*u; c.beginPath(); c.moveTo(cx - R*.33, cy + R*.55); c.lineTo(cx + R*.33, cy + R*.55); c.stroke();
+  c.strokeStyle = 'rgba(217,91,74,.55)'; c.lineWidth = 1.2*u;
+  for (let i = 0; i < 16; i++){ const a = rot + i*Math.PI/8; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(a)*R, cy + Math.sin(a)*R); c.stroke(); }
+  c.strokeStyle = '#d95b4a'; c.lineWidth = 3*u; c.beginPath(); c.arc(cx, cy, R, 0, Math.PI*2); c.stroke();
+  c.lineWidth = 1.3*u; c.beginPath(); c.arc(cx, cy, R*.84, 0, Math.PI*2); c.stroke();
+  for (let i = 0; i < 12; i++){
+    const a = rot + i*Math.PI/6, gx = cx + Math.cos(a)*R, gy = cy + Math.sin(a)*R;
+    c.strokeStyle = '#71849a'; c.lineWidth = 1*u; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx, gy + 3.5*u); c.stroke();
+    c.fillStyle = cols[i % cols.length]; c.beginPath(); c.roundRect(gx - 4.5*u, gy + 3*u, 9*u, 7.5*u, 2*u); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.75)'; c.fillRect(gx - 2.8*u, gy + 4.6*u, 5.6*u, 2.4*u);
+  }
+  circ(cx, cy, 5*u, '#71849a'); circ(cx, cy, 2.2*u, '#d95b4a');
+}
+function drawClouds(){
+  const top = 70, bot = gTop - 46*u;
+  clouds.forEach(cl => {
+    if (!RM) cl.x += cl.v*.016; if (cl.x > 1.25) cl.x = -.25;
+    const x = cl.x*W, y = top + cl.y*Math.max(20, bot - top), R = 17*u*cl.s;
+    c.globalAlpha = .92; blobs(x, y, R, [[0,0,1],[-1,.25,.72],[1,.2,.78],[-.45,-.45,.7],[.5,-.35,.62],[1.8,.35,.5],[-1.7,.4,.45]], '#ffffff'); c.globalAlpha = 1;
+  });
+}
+function drawPond(){
+  const p = pond(), k = p.k;
+  ell(p.x, p.y + 1*k, p.rx + 5*k, p.ry + 4*k, '#7fa85f');
+  ell(p.x, p.y, p.rx, p.ry, '#58ade0');
+  ell(p.x - p.rx*.2, p.y - p.ry*.25, p.rx*.55, p.ry*.4, '#8fd0f2');
+  c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 1.5*k; c.lineCap = 'round';
+  for (let i = 0; i < 2; i++){ const o = RM ? 0 : Math.sin(T*1.5 + i*2)*4*k; c.beginPath(); c.moveTo(p.x - 12*k + o + i*16*k, p.y + (i ? 4 : -2)*k); c.lineTo(p.x - 4*k + o + i*16*k, p.y + (i ? 4 : -2)*k); c.stroke(); }
+  for (let i = 0; i < 3; i++){
+    const rx = p.x - p.rx*.95 + i*5*k, sw = RM ? 0 : Math.sin(T*1.2 + i)*1.5*k;
+    c.strokeStyle = '#3f7a3a'; c.lineWidth = 1.8*k; c.beginPath(); c.moveTo(rx, p.y + 2*k); c.lineTo(rx + sw, p.y - (18 + i*4)*k); c.stroke();
+    ell(rx + sw, p.y - (18 + i*4)*k, 2*k, 4.5*k, '#8b5e3c');
+  }
+  if (pondPulse > 0){ const a = (pondPulse % .7)/.7; c.strokeStyle = 'rgba(255,255,255,' + (a*.9) + ')'; c.lineWidth = 3*k; c.beginPath(); c.ellipse(p.x, p.y, p.rx + (1 - a)*16*k, p.ry + (1 - a)*8*k, 0, 0, Math.PI*2); c.stroke(); }
+}
+
+/* ---------- Отрисовка растений и мальчика ---------- */
+function drawPlant(p){
+  const b = plantBox(p), x = b.x, y = b.y, k = b.k, g = b.g, f = b.f;
+  let sw = RM ? 0 : Math.sin(T*1.3 + p.id)*1.6*k;
+  if (p.shake > 0) sw += Math.sin(T*40)*p.shake*7*k;
+  if (g > .2) ell(x + 4*k, y + 1, TYPES[p.type].dim[0]*k*f*.42, 4.5*k*f + 1, 'rgba(40,80,30,.2)');
+  if (g < .5){ ell(x, y + 1, 11*k, 3.6*k, '#8b5e3c'); ell(x - 2*k, y, 6*k, 1.6*k, '#a8764d'); }
+  const wilt = p.thirsty && p.stage > 0 && (p.thirstT || 0) > WILT_AFTER*.5;
+  if (wilt) c.filter = 'saturate(.45) sepia(.35)';
+  if (g < .12) sprout(x, y, k*(.85 + g*2.5), sw);
+  else DRAW[p.type](x, y, k, f, p.id, sw);
+  if (wilt) c.filter = 'none';
+}
+function drawBubble(p){
+  const left = 1 - (p.thirstT || 0)/WILT_AFTER;                 // сколько времени осталось до увядания
+  const urgent = left < .25 && p.stage > 0;
+  const b = plantBox(p), k = Math.max(.85, b.k);
+  const bob = RM ? 0 : (urgent ? Math.sin(T*30)*1.6 : Math.sin(T*4 + p.id)*2.2);
+  const bx = b.x + (urgent && !RM ? Math.sin(T*25)*1.2 : 0), by = b.y - (b.g < .12 ? 22*b.k : TYPES[p.type].dim[1]*b.k*b.f) - 15*k + bob;
+  const col = left > .5 ? '#2f8fd6' : left > .25 ? '#e59a1f' : '#d9412f';
+  c.fillStyle = 'rgba(36,51,31,.16)'; c.beginPath(); c.arc(bx, by + 1.5, 11*k, 0, Math.PI*2); c.fill();
+  circ(bx, by, 11*k, '#ffffff');
+  c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(bx - 3*k, by + 9*k); c.lineTo(bx, by + 14*k); c.lineTo(bx + 3*k, by + 9*k); c.fill();
+  if (p.stage > 0){
+    c.lineCap = 'round'; c.lineWidth = 2.4*k;
+    c.strokeStyle = '#e6ecef'; c.beginPath(); c.arc(bx, by, 8.6*k, 0, Math.PI*2); c.stroke();
+    c.strokeStyle = col; c.beginPath(); c.arc(bx, by, 8.6*k, -Math.PI/2, -Math.PI/2 + Math.PI*2*Math.max(0, left)); c.stroke();
+  }
+  drop(bx, by + 1*k, 4.2*k, p.stage > 0 ? col : '#2f8fd6');
+}
+const SIGN = {xn:.86, yn:.02};
+function signGeom(){ const k = u*ds(SIGN.yn)*1.2, x = X(SIGN.xn), y = Y(SIGN.yn), w = 94*k, h = 36*k; return {x, y, k, w, h, top:y - 20*k - h}; }
+function drawSign(){
+  const s = signGeom(), k = s.k;
+  ell(s.x + 3*k, s.y + 1, s.w*.5, 3.5*k, 'rgba(40,80,30,.2)');
+  c.fillStyle = '#7a5234'; c.fillRect(s.x - s.w*.34 - 2*k, s.top + s.h - 2, 4*k, s.y - s.top - s.h + 2); c.fillRect(s.x + s.w*.34 - 2*k, s.top + s.h - 2, 4*k, s.y - s.top - s.h + 2);
+  c.fillStyle = '#2f7039'; c.beginPath(); c.roundRect(s.x - s.w/2 - 2*k, s.top - 2*k, s.w + 4*k, s.h + 4*k, 6*k); c.fill();
+  c.fillStyle = '#fffdf4'; c.beginPath(); c.roundRect(s.x - s.w/2 + 1.5*k, s.top + 1.5*k, s.w - 3*k, s.h - 3*k, 4*k); c.fill();
+  c.fillStyle = '#2f7039'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+  c.font = '700 ' + (9.5*k).toFixed(1) + 'px "Balsamiq Sans", "Trebuchet MS", sans-serif'; c.fillText('ПАРКИ', s.x, s.top + 14*k);
+  c.font = '700 ' + (13*k).toFixed(1) + 'px "Balsamiq Sans", "Trebuchet MS", sans-serif'; c.fillText('ВИДНОГО', s.x, s.top + 29*k);
+  circ(s.x - s.w*.36, s.top + 10*k, 3*k, '#56a847'); circ(s.x + s.w*.36, s.top + 10*k, 3*k, '#56a847');
+}
+function inSign(x, y, pad){ const s = signGeom(); return x > s.x - s.w/2 - pad && x < s.x + s.w/2 + pad && y > s.top - pad && y < s.y + pad; }
+const BOY_LOOK = {scale:1.25, legs:'#f2c49c', shoes:'#5a3b2a', shorts:'#3f6fb5', shirt:'#f2b33d', stripe:'#e2892f', sleeve:null, cap:'#3e8e4a', visor:'#2f7039', can:'#2f8fd6', canHi:'#7fc0ee', adult:false};
+const WORKER_LOOK = {scale:1.6, legs:'#2a5e36', shoes:'#2b2b28', shorts:'#2a5e36', shirt:'#3a8a48', stripe:'#e4ee5c', sleeve:'#347d41', cap:'#2f7039', visor:'#24592d', can:'#f08a2c', canHi:'#f8c38d', adult:true};
+function drawPerson(M, L){
+  const bx = X(M.xn), by = Y(M.yn), k = u*ds(clamp(M.yn,0,1))*L.scale;
+  const walk = M.walking ? Math.sin(M.phase) : 0; let bob = M.walking ? Math.abs(Math.cos(M.phase))*1.6*k : 0;
+  const dance = M.dance, ds2 = M.seed || 0;
+  if (dance === 'jump') bob = Math.abs(Math.sin(T*7 + ds2))*6*k;
+  const act = M.act ? M.act.kind : null, ap = M.act ? 1 - M.actT/M.act.dur : 0;
+  ell(bx, by, 12*k, 3.6*k, 'rgba(40,80,30,.25)');
+  c.save(); c.translate(bx, by); c.scale(M.dir, 1);
+  const skin = '#f2c49c';
+  c.lineCap = 'round'; c.lineWidth = (L.adult ? 4.8 : 4.2)*k; c.strokeStyle = L.legs;
+  [[-3, walk], [3, -walk]].forEach(l => { const fx = l[0]*k + l[1]*6*k; c.beginPath(); c.moveTo(l[0]*k, -15*k - bob); c.lineTo(fx, -3*k); c.stroke(); ell(fx + 1.8*k, -1.8*k, 3.6*k, 2.2*k, L.shoes); });
+  // задняя рука
+  c.strokeStyle = L.sleeve || '#e5b389'; c.lineWidth = 3.4*k;
+  if (!dance){ c.beginPath(); c.moveTo(-2*k, -29*k - bob); c.lineTo(-5*k - walk*4*k, -20*k - bob); c.stroke(); }
+  if (dance){ c.beginPath(); c.moveTo(-2*k, -29*k - bob); c.lineTo(-7*k + Math.sin(T*8 + ds2)*2*k, -45*k - bob); c.stroke(); circ(-7*k + Math.sin(T*8 + ds2)*2*k, -45*k - bob, 1.8*k, '#f2c49c'); }
+  c.fillStyle = L.shorts;
+  if (L.girl){ c.beginPath(); c.moveTo(-7*k, -20*k - bob); c.lineTo(7*k, -20*k - bob); c.lineTo(10*k, -11*k - bob); c.lineTo(-10*k, -11*k - bob); c.closePath(); c.fill(); }
+  else { c.beginPath(); c.roundRect(-7*k, -20*k - bob, 14*k, 7*k, 2*k); c.fill(); }
+  c.fillStyle = L.shirt; c.beginPath(); c.roundRect(-7.5*k, -34*k - bob, 15*k, L.adult ? 17*k : 16*k, 4*k); c.fill();
+  c.fillStyle = L.stripe; c.fillRect(-7.5*k, -26*k - bob, 15*k, 2.4*k);
+  if (L.adult){ c.fillRect(-.8*k, -34*k - bob, 1.6*k, 8*k); circ(4*k, -30.5*k - bob, 1.6*k, '#ffffff'); circ(4*k, -30.5*k - bob, .9*k, '#56a847'); }
+  // голова
+  const hx = 1*k, hy = -41.5*k - bob;
+  circ(hx, hy, 8.5*k, '#f5cda6');
+  if (L.girl){ c.fillStyle = L.hair; c.beginPath(); c.arc(hx, hy - .5*k, 9*k, Math.PI*.95, Math.PI*2.02); c.fill(); circ(hx - 8.5*k, hy + 1*k, 3.6*k, L.hair); circ(hx - 7*k, hy + 5*k, 2.8*k, L.hair); circ(hx - 5*k, hy - 7*k, 2*k, L.bow || '#e0483c'); }
+  else { c.fillStyle = L.cap; c.beginPath(); c.arc(hx, hy - 1*k, 8.9*k, Math.PI, 0); c.fill();
+  ell(hx + 8*k, hy - 1.6*k, 5*k, 1.8*k, L.visor); }
+  if (L.adult) circ(hx - 1*k, hy - 5.5*k, 1.6*k, '#e4ee5c');
+  circ(hx + 4*k, hy + 1.2*k, 1.15*k, '#24331f');
+  circ(hx + 4.8*k, hy + 4.4*k, 1.7*k, 'rgba(232,120,110,.45)');
+  if (L.adult){ c.fillStyle = '#7a5234'; c.beginPath(); c.ellipse(hx + 4.6*k, hy + 3.6*k, 2.6*k, 1*k, 0, 0, Math.PI*2); c.fill(); }
+  else { c.strokeStyle = '#8a4a36'; c.lineWidth = 1*k; c.beginPath(); c.arc(hx + 3.2*k, hy + 3.6*k, 1.8*k, .2, 1.5); c.stroke(); }
+  // передняя рука и инструмент
+  let hand = [8*k, -22*k - bob + walk*1.5*k], canTilt = 0;
+  if (dance) hand = [7*k + Math.cos(T*8 + ds2)*2*k, -46*k - bob];
+  if (act === 'water'){ hand = [10*k, -27*k]; canTilt = .65; }
+  if (act === 'refill'){ hand = [11*k, -12*k + Math.sin(ap*Math.PI)*3*k]; canTilt = .9; }
+  if (act === 'plant'){
+    const dig = Math.sin(ap*Math.PI*3)*4*k; hand = [9*k, -24*k + dig];
+    c.strokeStyle = '#8a5a34'; c.lineWidth = 2.2*k; c.beginPath(); c.moveTo(hand[0] - 2*k, hand[1] - 4*k); c.lineTo(hand[0] + 5*k, -3*k + dig); c.stroke();
+    c.fillStyle = '#9aa3a8'; c.beginPath(); c.ellipse(hand[0] + 6*k, -1.5*k + dig, 2.6*k, 4*k, -.4, 0, Math.PI*2); c.fill();
+  }
+  c.strokeStyle = L.sleeve || skin; c.lineWidth = 3.4*k; c.beginPath(); c.moveTo(2*k, -29*k - bob); c.lineTo(hand[0], hand[1]); c.stroke();
+  if (L.sleeve || dance) circ(hand[0], hand[1], 1.8*k, skin);
+  if (act !== 'plant' && L.can && !dance){
+    c.save(); c.translate(hand[0] + 3*k, hand[1] + 2*k); c.rotate(canTilt);
+    c.strokeStyle = L.can; c.lineWidth = 1.6*k; c.beginPath(); c.arc(0, -4*k, 3.5*k, Math.PI, 0); c.stroke();
+    c.fillStyle = L.can; c.beginPath(); c.roundRect(-4.5*k, -4*k, 9*k, 7.5*k, 1.5*k); c.fill();
+    c.strokeStyle = L.can; c.lineWidth = 1.8*k; c.beginPath(); c.moveTo(4*k, 1*k); c.lineTo(9.5*k, -4*k); c.stroke();
+    c.fillStyle = L.canHi; c.fillRect(-3.5*k, -2.5*k, 2*k, 4*k);
+    c.restore();
+  }
+  c.restore();
+}
+const drawBoy = () => drawPerson(B, BOY_LOOK);
+function drawButterflies(){
+  const n = isPark() ? 14 : Math.min(8, Math.floor(S.grown/4)), cols = ['#f2b33d','#e86f9a','#8fc3f0','#ffffff','#c9a6ea'];
+  for (let i = 0; i < n; i++){
+    const t = T*.35 + i*1.9;
+    const x = W*(.5 + .42*Math.sin(t*.7 + i*1.3)), y = gTop + (gBot - gTop)*(.3 + .3*Math.sin(t*1.1 + i*2)) - 30*u;
+    const fl = RM ? .8 : Math.abs(Math.sin(T*13 + i)), k = u*.9, col = cols[i % cols.length];
+    ell(x - 3.5*k*fl, y, 3.8*k*fl + .3, 3*k, col); ell(x + 3.5*k*fl, y, 3.8*k*fl + .3, 3*k, col);
+    ell(x, y, .9*k, 2.6*k, '#3b2f2a');
+  }
+}
+function drawParticles(){
+  for (const q of P){
+    const a = Math.min(1, q.life/q.max*1.6); c.globalAlpha = a;
+    if (q.kind === 'text'){ c.fillStyle = q.col; c.font = '700 ' + Math.round(20*u) + 'px "Balsamiq Sans", sans-serif'; c.textAlign = 'center'; c.fillText(q.text, q.x, q.y); }
+    else if (q.kind === 'leaf'){ c.save(); c.translate(q.x, q.y); c.rotate(q.rot); ell(0, 0, q.r*1.4, q.r*.7, q.col); c.restore(); }
+    else circ(q.x, q.y, q.r, q.col);
+  }
+  c.globalAlpha = 1;
+}
+function draw(){
+  c.setTransform(DPR,0,0,DPR,0,0);
+  drawSky(); drawWheel(); drawClouds();
+  if (land) c.drawImage(land, 0, 0, W, H);
+  if (isPark()) drawFountain(); else drawPond();
+  if (marker && B.target){
+    const mx = X(marker.xn), my = Y(marker.yn), k = u*ds(marker.yn), pulse = (marker.t*1.6) % 1;
+    c.strokeStyle = 'rgba(255,255,255,' + (0.9 - pulse*.6) + ')'; c.lineWidth = 2.2*k;
+    c.beginPath(); c.ellipse(mx, my, (9 + pulse*8)*k, (3.5 + pulse*3)*k, 0, 0, Math.PI*2); c.stroke();
+  }
+  const list = S.plants.map(p => ({y:Y(p.yn), p}));
+  list.push({y:Y(B.yn) + .5, boy:true});
+  list.push({y:Y(SIGN.yn), sign:true});
+  if (WK.active) list.push({y:Y(WK.yn) + .6, worker:true});
+  KIDS.forEach(kd => list.push({y:Y(kd.yn) + .4, kid:kd}));
+  list.sort((a,b) => a.y - b.y);
+  for (const e of list){ if (e.boy) drawBoy(); else if (e.worker) drawPerson(WK, WORKER_LOOK); else if (e.kid) drawPerson(e.kid, e.kid.look); else if (e.sign) drawSign(); else drawPlant(e.p); }
+  if (!isPark()) for (const p of S.plants) if (p.thirsty && p.growT <= 0) drawBubble(p);
+  drawButterflies(); drawBirds();
+  drawParticles();
+}
+
+/* ---------- Цикл ---------- */
+let last = 0;
+function frame(now){ const dt = Math.min(.05, last ? (now - last)/1000 : 0); last = now; update(dt); draw(); requestAnimationFrame(frame); }
+
+/* ---------- Кнопки ---------- */
+$('playBtn').textContent = hadSave ? 'Продолжить' : 'Играть';
+$('playBtn').addEventListener('click', () => {
+  $('intro').hidden = true; started = true; audio(); sfx('tap');
+  tip('start', 'Нажми на траву — мальчик посадит дерево');
+});
+$('helpBtn').addEventListener('click', () => { $('help').hidden = false; started = false; resetArm(false); });
+$('resumeBtn').addEventListener('click', () => { $('help').hidden = true; started = true; });
+let armed = false;
+function resetArm(on){ armed = on; const r = $('resetBtn'); r.textContent = on ? 'Точно стереть весь сад? Нажми ещё раз' : 'Начать заново'; r.classList.toggle('danger', on); }
+$('resetBtn').addEventListener('click', () => {
+  if (!armed){ resetArm(true); return; }
+  S = fresh(); S.tips.start = 1; setTimeout(helperHud, 0); B.xn = .5; B.yn = .55; B.target = B.queued = B.act = null; marker = null; P.length = 0; WK.active = false; WK.queue = []; WK.cur = null; WK.act = null; KIDS.length = 0;
+  save(); hud(); refreshSeeds(); resetArm(false);
+  $('help').hidden = true; started = true; toast('Новый сад! Нажми на траву');
+});
+$('soundBtn').addEventListener('click', () => { S.sound = !S.sound; dirty = true; soundIcon(); if (S.sound){ audio(); sfx('tap'); } });
+document.addEventListener('visibilitychange', () => { if (document.hidden && dirty) save(); });
+window.addEventListener('pagehide', () => { if (dirty) save(); });
+
+/* ---------- Старт ---------- */
+buildSeeds(); hud(); soundIcon(); layout(); helperHud(); if (isPark()) startParty();
+$('helperBtn').addEventListener('click', callHelper);
+window.addEventListener('resize', layout);
+if (tg && tg.onEvent) tg.onEvent('viewportChanged', layout);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
