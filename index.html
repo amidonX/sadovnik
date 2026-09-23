@@ -90,6 +90,10 @@ button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
 .diff-note{margin:0 0 14px;font:700 12.5px/1.3 var(--body);color:var(--ink-2);text-align:center}
 .cta{width:100%;border:0;border-radius:14px;background:var(--sun);color:var(--ink);font:700 21px/1 var(--display);padding:14px;box-shadow:0 4px 0 var(--sun-deep);cursor:pointer}
 .cta:active{transform:translateY(2px);box-shadow:0 2px 0 var(--sun-deep)}
+.ach{margin:0 0 14px}
+.ach-title{margin:0 0 6px;font:800 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:#fff3d2;border:1.5px solid var(--sun);border-radius:999px;padding:6px 10px;font:800 13px/1 var(--body)}
 .ghost{width:100%;margin-top:10px;border:2px solid var(--line);background:transparent;border-radius:14px;padding:10px;font:700 14px/1 var(--body);color:var(--ink-2);cursor:pointer}
 .ghost.danger{border-color:var(--danger);color:var(--danger)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -137,10 +141,10 @@ button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
       <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="10.8" y="13" width="2.4" height="9" rx="1" fill="#7a5234"/><circle cx="12" cy="9" r="6" fill="#3f8a3a"/><circle cx="7.5" cy="12" r="4" fill="#3f8a3a"/><circle cx="16.5" cy="12" r="4" fill="#3f8a3a"/><circle cx="10.5" cy="7.5" r="3" fill="#56a847"/></svg></span>Чем больше выросло — тем больше новых деревьев откроется</li>
     </ul>
     <div class="diff" role="group" aria-label="Сложность">
-      <button type="button" class="seg" id="diffNormal">Обычная</button>
-      <button type="button" class="seg" id="diffHard">Сложная</button>
+      <button type="button" class="seg" id="diffNormal" data-diff="0">Обычная</button>
+      <button type="button" class="seg" id="diffHard" data-diff="1">Сложная</button>
     </div>
-    <p class="diff-note" id="diffNote">В лейке 6 капель</p>
+    <p class="diff-note">В лейке 6 капель</p>
     <button class="cta" id="playBtn">Играть</button>
   </div>
 </div>
@@ -150,6 +154,11 @@ button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
     <p class="kicker">Парки Видного</p>
     <h2>Игра окончена</h2>
     <p class="lead">Полиция увезла юного садовника. Рубить деревья в парке нельзя!</p>
+    <div class="diff" role="group" aria-label="Сложность">
+      <button type="button" class="seg" id="overDiffNormal" data-diff="0">Обычная</button>
+      <button type="button" class="seg" id="overDiffHard" data-diff="1">Сложная</button>
+    </div>
+    <p class="diff-note"></p>
     <button class="cta" id="againBtn">Начать заново</button>
   </div>
 </div>
@@ -159,6 +168,11 @@ button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
     <p class="kicker">Парки Видного</p>
     <h2>Победа!</h2>
     <p class="lead">Игра окончена: ты вырастил настоящий парк. Все жители парка говорят тебе спасибо!</p>
+    <div class="diff" role="group" aria-label="Сложность">
+      <button type="button" class="seg" id="winDiffNormal" data-diff="0">Обычная</button>
+      <button type="button" class="seg" id="winDiffHard" data-diff="1">Сложная</button>
+    </div>
+    <p class="diff-note"></p>
     <button class="cta" id="winAgainBtn">Играть снова</button>
   </div>
 </div>
@@ -174,6 +188,13 @@ button:focus-visible{outline:3px solid var(--water);outline-offset:2px}
       <li><span class="ic"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13.5" fill="#eef4dd"/><path d="M4 27c1-5.5 4.8-8 10-8s9 2.5 10 8z" fill="#3a8a48"/><rect x="4.5" y="23" width="19" height="1.8" fill="#e4ee5c"/><circle cx="14" cy="13" r="5.6" fill="#f5cda6"/><path d="M8.2 12.4a5.8 5.8 0 0 1 11.6 0z" fill="#2f7039"/><ellipse cx="20" cy="12.2" rx="3.4" ry="1.2" fill="#24592d"/><circle cx="13.3" cy="9.4" r="1" fill="#e4ee5c"/><circle cx="16.4" cy="13.8" r=".8" fill="#24331f"/><ellipse cx="16.6" cy="15.7" rx="1.8" ry=".7" fill="#7a5234"/></svg></span>«Помощь» — сотрудник парка польёт 5 растений. Новая помощь — за каждые 5 посаженных растений или 5 минут игры (не больше 3)</li>
       <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="10.8" y="13" width="2.4" height="9" rx="1" fill="#7a5234"/><circle cx="12" cy="9" r="6" fill="#3f8a3a"/><circle cx="7.5" cy="12" r="4" fill="#3f8a3a"/><circle cx="16.5" cy="12" r="4" fill="#3f8a3a"/></svg></span>Уровни: Огород → Садик → Сквер → Роща → Сад → Парк. В парке включится автополив и заработает фонтан!</li>
     </ul>
+    <div class="ach" id="achBox" hidden><p class="ach-title">Твои ачивки</p><div class="chips" id="achList"></div></div>
+    <p class="ach-title">Сложность</p>
+    <div class="diff" role="group" aria-label="Сложность">
+      <button type="button" class="seg" id="helpDiffNormal" data-diff="0">Обычная</button>
+      <button type="button" class="seg" id="helpDiffHard" data-diff="1">Сложная</button>
+    </div>
+    <p class="diff-note"></p>
     <button class="cta" id="resumeBtn">Продолжить</button>
     <button class="ghost" id="resetBtn">Начать заново</button>
   </div>
@@ -209,13 +230,14 @@ const THIRST_IN = 30, WILT_AFTER = 60;   // через 30 с снова хоче
 const HELP_MAX = 3, HELP_EVERY_PLANTS = 5, HELP_EVERY_SEC = 300, HELP_WATERS = 5;
 const WATER_MAX = 6, GROW = 2.4, KEY = 'yuny-sadovnik-v1', MAX_PLANTS = 160;
 
-function fresh(){ return {plants:[], grown:0, water:6, sel:'oak', tips:{}, nextId:1, sound:true, boy:{xn:.5,yn:.55}, helps:HELP_MAX, planted:0, playT:0, hard:false, wheelTaps:0, wheelNext:0, wheelLit:false, chops:0, decor:[], wiltStreak:[], over:false, grannyDone:false, timers:{scoot:60, dog:90, bbq:300, rex:420, bear:600}}; }
+function fresh(){ return {plants:[], grown:0, water:6, sel:'oak', tips:{}, nextId:1, sound:true, boy:{xn:.5,yn:.55}, helps:HELP_MAX, planted:0, playT:0, hard:false, wheelTaps:0, wheelNext:0, wheelLit:false, chops:0, decor:[], wiltStreak:[], over:false, grannyDone:false, timers:{scoot:60, dog:90, bbq:360, rex:420, squirrel:30, bear:600}, taps:{squirrel:0, cat:0, lamp:0, bridge:0, sun:0, sign:0, boat:0}, done:{}, ach:[], boatRide:false}; }
 const waterMax = () => S.hard ? 3 : 6;
 let S = fresh();
 try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.plants)) S = Object.assign(fresh(), s); } catch(e){}
 S.plants.forEach(p => { if (p.waitT == null) p.waitT = 0; if (p.thirstT == null) p.thirstT = 0; p.helper = false; });
 if (!S.planted) S.planted = S.plants.length;
-S.timers = Object.assign(fresh().timers, S.timers || {});
+S.timers = fresh().timers;   // при каждом запуске события отсчитываются заново: медведь — через 10 минут игры и т. д.
+S.taps = Object.assign(fresh().taps, S.taps || {}); S.done = S.done || {}; S.ach = S.ach || [];
 const hadSave = S.plants.length > 0;
 let dirty = false, saveClock = 0;
 function save(){ S.boy = {xn:B.xn, yn:B.yn}; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} dirty = false; }
@@ -242,7 +264,7 @@ const ds = yn => 0.72 + 0.4*yn;
 
 function layout(){
   DPR = Math.min(window.devicePixelRatio || 1, 2);
-  W = cv.clientWidth || innerWidth; H = cv.clientHeight || innerHeight;
+  W = Math.max(1, cv.clientWidth || innerWidth || 1); H = Math.max(1, cv.clientHeight || innerHeight || 1);   // окно бывает нулевым, пока открывается
   cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
   const barTop = bar.getBoundingClientRect().top || H - 90;
   gTop = Math.round(H*0.34);
@@ -287,6 +309,7 @@ function sfx(n){
     else if (n==='fall'){ tone(320,.55,'triangle',.08,0,60); tone(90,.3,'square',.05,.5); }
     else if (n==='pop'){ tone(900,.07,'square',.05,0,180); tone(1500,.06,'sine',.06,.02); }
     else if (n==='whirr'){ tone(180,.6,'sawtooth',.02,0,320); }
+    else if (n==='giggle'){ tone(1175,.08,'sine',.05); tone(1397,.08,'sine',.05,.09); tone(1568,.12,'sine',.05,.18); }
     else if (n==='woof'){ tone(420,.09,'square',.05,0,260); tone(400,.1,'square',.05,.16,240); }
     else if (n==='boom'){ tone(140,.35,'sawtooth',.09,0,40); tone(70,.45,'square',.07,.03,30); }
     else if (n==='fire'){ for (let i=0;i<6;i++) tone(1800+Math.random()*1500,.03,'square',.02,i*.07); }
@@ -312,6 +335,7 @@ function tip(key, msg){ if (S.tips[key]) return; S.tips[key] = 1; dirty = true; 
 let bannerTimer = 0;
 function banner(kicker, title, sub){
   $('bannerKicker').textContent = kicker; $('bannerTitle').textContent = title; $('bannerSub').textContent = sub || '';
+  $('toast').classList.remove('show');
   const b = $('banner'); b.classList.add('show'); clearTimeout(bannerTimer); bannerTimer = setTimeout(()=>b.classList.remove('show'), 3000);
 }
 
@@ -535,6 +559,7 @@ function setTarget(t){
   let fx, fy;
   if (t.kind === 'plant'){ fx = X(t.xn); fy = Y(t.yn); }
   else if (t.kind === 'water' || t.kind === 'chop'){ fx = X(t.p.xn); fy = Y(t.p.yn); }
+  else if (t.kind === 'ride'){ fx = X(t.d.xn); fy = Y(t.d.yn); }
   else { const pd = pond(); fx = pd.x; fy = pd.y; }
   const k = u*ds(YN(fy)); let sx, sy = fy + 2;
   if (t.kind === 'refill'){ const pd = pond(); sx = pd.x + pd.rx + 10*k; sy = pd.y + pd.ry*.4; }
@@ -558,6 +583,9 @@ function arrive(){
     const p = t.p; if (!S.plants.includes(p) || !p.thirsty){ marker = null; return; }
     if (S.water <= 0){ emptyCan(); marker = null; return; }
     B.act = {kind:'water', t, dur:.9}; sfx('water');
+  } else if (t.kind === 'ride'){
+    marker = null; B.ride = 5; B.hidden = true; boatBoost = 2.2; sfx('party'); dirty = true;
+    const k = u*ds(t.d.yn)*1.1; floatText(X(t.d.xn), Y(t.d.yn) - 60*k, 'Уи-и-и!'); return;
   } else if (t.kind === 'chop'){
     if (!S.plants.includes(t.p)){ marker = null; return; }
     B.act = {kind:'chop', t, dur:1.4}; sfx('chop'); setTimeout(() => sfx('chop'), 700);
@@ -778,7 +806,9 @@ const DECOR = {
   bridge:{r:30, box:[80,36], name:'мостик'},
   boat:  {r:28, box:[62,62], name:'аттракцион «Лодочка»'},
   stump: {r:10, box:[18,14], name:'пенёк'},
-  bbq:   {r:24, box:[40,30], name:'мангал'}
+  bbq:   {r:24, box:[40,30], name:'мангал'},
+  feeder:{r:12, box:[26,48], name:'автомат «Корм для белок»'},
+  hammock:{r:26, box:[56,32], name:'гамак'}
 };
 const LEVEL_DECOR = [null, 'lamp', 'cat', 'bridge', 'boat'];
 const DECOR_PREF = {lamp:[.3,.3], cat:[.68,.55], bridge:[.5,.16], boat:[.82,.78]};
@@ -795,17 +825,17 @@ function findFree(type, pxn, pyn){
 }
 function addDecor(type){
   if (S.decor.some(d => d.type === type)) return null;
-  const pr = DECOR_PREF[type], s = type === 'boat' ? {xn:SIGN.xn, yn:-.06} : (findFree(type, pr[0], pr[1]) || {xn:pr[0], yn:pr[1]});
+  const pr = DECOR_PREF[type], s = type === 'boat' ? {xn:.13, yn:-.085} : (findFree(type, pr[0], pr[1]) || {xn:pr[0], yn:pr[1]});
   const d = {type, xn:s.xn, yn:s.yn}; S.decor.push(d); dirty = true; return d;
 }
 function ensureDecor(){
   const L = levelOf(S.grown); for (let i = 1; i <= Math.min(L, 4); i++) addDecor(LEVEL_DECOR[i]);
-  const bd = S.decor.find(d => d.type === 'boat'); if (bd){ bd.xn = SIGN.xn; bd.yn = -.06; }   // лодочка стоит за вывеской
+  const bd = S.decor.find(d => d.type === 'boat'); if (bd){ bd.xn = .13; bd.yn = -.085; }   // лодочка стоит чуть выше пруда
 }
-function decorHit(d, x, y){ const k = u*ds(d.yn)*1.1, b = DECOR[d.type].box, dx = X(d.xn), dy = Y(d.yn); return x > dx - b[0]*k/2 && x < dx + b[0]*k/2 && y > dy - b[1]*k && y < dy + 8; }
-const DECOR_TAP = {lamp:'Светильник: вечером здесь светло', cat:'Чеширский кот улыбается тебе', bridge:'Мостик через ручей', boat:'Лодочка! Кто хочет покачаться?', stump:'Здесь росло дерево директора…'};
+function decorHit(d, x, y){ const k = u*ds(d.yn)*1.1*(d.s || 1), b = DECOR[d.type].box, dx = X(d.xn), dy = Y(d.yn); return x > dx - b[0]*k/2 && x < dx + b[0]*k/2 && y > dy - b[1]*k && y < dy + 8; }
+const DECOR_TAP = {lamp:'Светильник: вечером здесь светло', cat:'Чеширский кот улыбается тебе', bridge:'Мостик через ручей', boat:'Лодочка! Кто хочет покачаться?', stump:'Здесь росло дерево парка…', feeder:'Автомат «Корм для белок»', hammock:'Гамак — можно отдохнуть'};
 function drawDecor(d){
-  const x = X(d.xn), y = Y(d.yn), k = u*ds(d.yn)*1.1;
+  const x = X(d.xn), y = Y(d.yn), k = u*ds(d.yn)*1.1*(d.s || 1);
   const shadow = (w) => ell(x + 2*k, y + 1, w*k, 3*k, 'rgba(40,80,30,.2)');
   if (d.type === 'lamp'){
     const g = c.createRadialGradient(x, y - 56*k, 1, x, y - 56*k, 26*k); g.addColorStop(0, 'rgba(255,226,130,.55)'); g.addColorStop(1, 'rgba(255,226,130,0)');
@@ -857,10 +887,35 @@ function drawDecor(d){
     c.strokeStyle = '#a8322a'; c.lineWidth = 3.6*k; c.beginPath(); c.moveTo(x - 25*k, top); c.lineTo(x + 25*k, top); c.stroke();
     c.save(); c.translate(x, top); c.rotate(a);
     c.strokeStyle = '#8a949c'; c.lineWidth = 1.6*k; c.beginPath(); c.moveTo(-3*k, 0); c.lineTo(-10*k, 34*k); c.moveTo(3*k, 0); c.lineTo(10*k, 34*k); c.stroke();
+    if (B.ride > 0){                                             // мальчик катается на лодочке
+      c.fillStyle = '#f2b33d'; c.beginPath(); c.roundRect(-4*k, 24*k, 8*k, 9*k, 2*k); c.fill();
+      c.strokeStyle = '#f2c49c'; c.lineWidth = 1.8*k; const wv = Math.sin(T*10)*2*k;
+      c.beginPath(); c.moveTo(-3*k, 26*k); c.lineTo(-7*k, 17*k + wv); c.moveTo(3*k, 26*k); c.lineTo(7*k, 17*k - wv); c.stroke();
+      circ(0, 20*k, 4.4*k, '#f5cda6'); c.fillStyle = '#3e8e4a'; c.beginPath(); c.arc(0, 19.4*k, 4.6*k, Math.PI, 0); c.fill();
+      circ(1.8*k, 20.6*k, .6*k, '#24331f');
+    }
     c.fillStyle = '#58ade0'; c.beginPath(); c.moveTo(-18*k, 31*k); c.lineTo(18*k, 31*k); c.quadraticCurveTo(16*k, 43*k, 0, 43*k); c.quadraticCurveTo(-16*k, 43*k, -18*k, 31*k); c.closePath(); c.fill();
     c.fillStyle = '#f2b33d'; c.fillRect(-16.5*k, 33*k, 33*k, 2.6*k);
     circ(-19*k, 30*k, 2*k, '#f2b33d'); circ(19*k, 30*k, 2*k, '#f2b33d');
     c.restore(); circ(x, top, 2.2*k, '#71849a');
+  } else if (d.type === 'feeder'){
+    shadow(11);
+    c.fillStyle = '#e07b2a'; c.beginPath(); c.roundRect(x - 11*k, y - 46*k, 22*k, 46*k, 3*k); c.fill();
+    c.fillStyle = '#b85e18'; c.beginPath(); c.roundRect(x - 11*k, y - 46*k, 22*k, 10*k, 3*k); c.fill();
+    c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+    c.font = '800 ' + (3.4*k).toFixed(1) + 'px Nunito, system-ui, sans-serif'; c.fillText('КОРМ', x, y - 41.6*k); c.fillText('ДЛЯ БЕЛОК', x, y - 37.6*k);
+    c.fillStyle = '#d8eef8'; c.beginPath(); c.roundRect(x - 8*k, y - 34*k, 16*k, 17*k, 2*k); c.fill();
+    for (let r = 0; r < 3; r++) for (let q = 0; q < 3; q++){ ell(x - 5*k + q*5*k, y - 30*k + r*5*k, 1.8*k, 1.4*k, (r + q) % 2 ? '#9a6a3a' : '#b98a4f'); }
+    c.fillStyle = '#3b3f45'; c.fillRect(x - 5*k, y - 11*k, 10*k, 3*k);
+    circ(x + 6.5*k, y - 14*k, 1.6*k, '#7cc75a'); circ(x + 6.5*k, y - 5*k, 1.2*k, '#ffd23f');
+  } else if (d.type === 'hammock'){
+    shadow(24);
+    c.strokeStyle = '#8a5a34'; c.lineWidth = 3*k; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(x - 25*k, y); c.lineTo(x - 23*k, y - 28*k); c.moveTo(x + 25*k, y); c.lineTo(x + 23*k, y - 28*k); c.stroke();
+    const sag = 12*k + (RM ? 0 : Math.sin(T*1.5 + d.xn*7)*1.6*k);
+    c.strokeStyle = '#c9b48a'; c.lineWidth = 1*k; c.beginPath(); c.moveTo(x - 23*k, y - 26*k); c.lineTo(x - 18*k, y - 22*k); c.moveTo(x + 23*k, y - 26*k); c.lineTo(x + 18*k, y - 22*k); c.stroke();
+    c.fillStyle = d.col || '#e0483c'; c.beginPath(); c.moveTo(x - 18*k, y - 22*k); c.quadraticCurveTo(x, y - 22*k + sag*2, x + 18*k, y - 22*k); c.quadraticCurveTo(x, y - 22*k + sag*2 - 8*k, x - 18*k, y - 22*k); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = 1.3*k; c.beginPath(); c.moveTo(x - 16*k, y - 21*k); c.quadraticCurveTo(x, y - 22*k + sag*2 - 4*k, x + 16*k, y - 21*k); c.stroke();
   } else if (d.type === 'stump'){
     ell(x + 2*k, y + 1, 9*k, 3*k, 'rgba(40,80,30,.2)');
     c.fillStyle = '#8b5e3c'; c.fillRect(x - 7*k, y - 7*k, 14*k, 7*k); ell(x, y, 7*k, 2.5*k, '#8b5e3c');
@@ -940,7 +995,7 @@ function directorScold(){
   const from = edgeFor(B.xn);
   npc('director', DIRECTOR_LOOK, from, B.yn, [
     {to:() => standBy(B.xn, B.yn, from, 24), face:a => Math.sign(B.xn - a.xn) || 1},
-    {act:'scold', dur:3.4, say:'Кто срубил моё дерево?! Деревья рубить нельзя!', start:() => sfx('scold')},
+    {act:'scold', dur:3.4, say:'Кто срубил дерево парка?! Деревья рубить нельзя!', start:() => sfx('scold')},
     {fn:() => { B.say = 'Простите, я больше не буду…'; B.sayT = 2.6; }},
     {wait:2.4},
     {act:'scold', dur:2.4, say:'Ещё раз — вызову полицию!', start:() => sfx('scold')},
@@ -1277,7 +1332,7 @@ function updateRex(dt){
 function tapRex(){
   const r = REX;
   if (!r.said || r.partied){ sfx('stomp'); return; }
-  r.partied = true; r.state = 'party'; r.t = 6.5; r.say = 'Ура-а-а!'; r.sayT = 2;
+  r.partied = true; r.state = 'party'; r.t = 6.5; r.say = 'Ура, праздник!'; r.sayT = 2.5;
   birthdayParty();
 }
 function birthdayParty(){
@@ -1286,7 +1341,7 @@ function birthdayParty(){
     const xn = .12 + Math.random()*.76, yn = .4 + Math.random()*.55, from = i % 2 ? -.16 : 1.16;
     npc('party', look, from, yn, [
       {to:[xn, yn], face:() => (xn < .5 ? 1 : -1)},
-      {act:'cheer', dur:5, say:i < 2 ? 'С днём рождения!' : (i === 5 ? 'Ура!' : null)},
+      {act:'cheer', dur:5, say:i < 2 ? 'Ура, праздник!' : (i === 5 ? 'Ура!' : null)},
       {to:[from, yn]}
     ], 230 + Math.random()*60);
   });
@@ -1327,7 +1382,21 @@ const GIRL_BIG = {scale:1.28, girl:true, hair:'#2b1d16', legs:'#f2c49c', shoes:'
 const GIRL_SMALL = {scale:.9, girl:true, hair:'#e0b04a', bow:'#e0483c', bigBow:true, legs:'#f2c49c', shoes:'#e0483c', shorts:'#58ade0', shirt:'#ffffff', stripe:'#58ade0'};
 function spawnParade(){
   const yn = .9, cast = [BEAR_LOOK, BOY_THIN, BOY_FAT, GIRL_BIG, GIRL_SMALL], gaps = [0, .2, .31, .46, .57];
-  cast.forEach((look, i) => npc('parade', look, -.14 - gaps[i], yn, [{to:[1.35, yn]}], 85));
+  const stop = .78, planter = stop - gaps[1];
+  cast.forEach((look, i) => {
+    const steps = [{to:[stop - gaps[i], yn], face:() => 1}];
+    if (i === 0) steps.push({act:'talk', dur:3.4, say:'Давайте посадим дерево!'});
+    else if (i === 1) steps.push({wait:.6}, {act:'plant', dur:2, tick:a => { if (Math.random() < .25){ const k = u*ds(a.yn)*1.25; burst(X(a.xn) + a.dir*14*k, Y(a.yn), 2, ['#8b5e3c','#a8764d'], {v:60, life:.4}); } }},
+      {fn:() => {
+        const open = ORDER.filter(isOpen), type = open[Math.floor(Math.random()*open.length)] || 'oak';
+        const f = findFree(type, planter + .06, .8); if (!f) return;
+        S.plants.push({id:S.nextId++, type, xn:f.xn, yn:f.yn, stage:0, thirsty:false, growT:GROW, waitT:0, thirstT:0});
+        burst(X(f.xn), Y(f.yn), 12, ['#8b5e3c','#a8764d','#6d4a30'], {v:70, life:.5}); sfx('plant'); dirty = true;
+      }}, {wait:.8});
+    else steps.push({act:'cheer', dur:3.4, say:i === 4 ? 'Расти большим!' : null});
+    steps.push({wait:.4}, {to:[1.35, yn]});
+    npc('parade', look, -.14 - gaps[i], yn, steps, 85);
+  });
 }
 function drawBear(M, L){
   const bx = X(M.xn), by = Y(M.yn), k = u*ds(clamp(M.yn, 0, 1))*L.scale;
@@ -1378,15 +1447,140 @@ function updateWin(dt){
   if (winT <= 0){ started = false; $('win').hidden = false; }
 }
 
+/* ---------- Белочки: просто бегают, при нажатии — улыбка ---------- */
+const SQUIRRELS = [];
+function spawnSquirrel(){
+  const fromLeft = Math.random() < .5;
+  SQUIRRELS.push({xn:fromLeft ? -.08 : 1.08, yn:.08 + Math.random()*.88, dir:fromLeft ? 1 : -1, phase:0, stopAt:.25 + Math.random()*.5, paused:0, didPause:false, cool:0});
+}
+function squirrelBox(q){ const k = u*ds(q.yn)*1.1, x = X(q.xn), y = Y(q.yn); return {x, y, k, w:Math.max(40, 22*k), top:y - Math.max(36, 26*k)}; }
+function tapSquirrel(q){
+  if (q.cool > 0) return;
+  q.cool = .6; const b = squirrelBox(q);
+  if (countTap('squirrel')){ achieve('Натуралист', 'Белки в восторге: в парке появился автомат «Корм для белок»!'); const f = findFree('feeder', .45, .35) || {xn:.45, yn:.35}; S.decor.push({type:'feeder', xn:f.xn, yn:f.yn}); }
+  P.push({x:b.x, y:b.y - 26*b.k, vx:0, vy:-38, g:0, life:1.5, max:1.5, col:'#ffd23f', r:10*u, kind:'smile', rot:0});
+  sfx('giggle');
+}
+function updateSquirrels(dt){
+  for (let i = SQUIRRELS.length - 1; i >= 0; i--){
+    const q = SQUIRRELS[i];
+    if (q.cool > 0) q.cool -= dt;
+    if (q.paused > 0){ q.paused -= dt; continue; }
+    q.xn += q.dir*150*u*dt/(W - 2*PADX); q.phase += dt*13;
+    if (!q.didPause && (q.dir > 0 ? q.xn > q.stopAt : q.xn < 1 - q.stopAt)){ q.didPause = true; q.paused = 1.4; }
+    if (q.xn < -.15 || q.xn > 1.15) SQUIRRELS.splice(i, 1);
+  }
+}
+function drawSquirrel(q){
+  const b = squirrelBox(q), k = b.k, sit = q.paused > 0, hop = sit ? 0 : Math.abs(Math.sin(q.phase))*5*k;
+  ell(b.x, b.y, 7*k, 1.8*k, 'rgba(40,80,30,.22)');
+  c.save(); c.translate(b.x, b.y - hop); c.scale(q.dir, 1); if (sit) c.rotate(-.35);
+  const fur = '#b8602a', dark = '#8f4a1f';
+  c.fillStyle = '#c96a2b'; c.beginPath(); c.ellipse(-7*k, -10*k, 4.8*k, 8.5*k, -.35, 0, Math.PI*2); c.fill();
+  c.fillStyle = '#e08a45'; c.beginPath(); c.ellipse(-6.4*k, -11*k, 2.6*k, 6*k, -.35, 0, Math.PI*2); c.fill();
+  c.strokeStyle = dark; c.lineWidth = 1.2*k; c.lineCap = 'round';
+  const leg = sit ? 0 : Math.sin(q.phase)*2.5*k;
+  c.beginPath(); c.moveTo(-2*k, -3*k); c.lineTo(-3*k - leg, 0); c.moveTo(3*k, -3*k); c.lineTo(4*k + leg, 0); c.stroke();
+  ell(0, -5.5*k, 5.8*k, 4.2*k, fur);
+  ell(2.4*k, -4.6*k, 2.8*k, 2.4*k, '#f2c49a');
+  circ(5*k, -10.5*k, 3.4*k, fur);
+  c.fillStyle = fur; c.beginPath(); c.moveTo(3.4*k, -13*k); c.lineTo(4.2*k, -17*k); c.lineTo(6*k, -13.4*k); c.closePath(); c.fill();
+  circ(6.6*k, -11.2*k, .8*k, '#1f1f1f'); circ(8.3*k, -9.8*k, .6*k, '#3b2a20');
+  if (sit){ circ(7*k, -6.5*k, 1.6*k, '#8a5a2c'); }
+  c.restore();
+}
+
+/* ---------- Ачивки и сюрпризы за 15 нажатий ---------- */
+let sunPulse = 0;
+function achieve(name, sub){
+  if (S.ach.includes(name)){ banner('Сюрприз!', '«' + name + '»', sub); sfx('party'); return; }
+  S.ach.push(name); dirty = true; achUi();
+  banner('Новая ачивка!', '«' + name + '»', sub); sfx('win'); buzz('ok');
+  for (let i = 0; i < 5; i++) burst(W*(.15 + i*.175), H*.3, 14, ['#f2b33d','#e86f9a','#58ade0','#7cc75a','#ffffff'], {v:200, life:1.6, spread:2, g:220, kind:'leaf', r:3.4});
+}
+function surprise(title, sub){ banner('Сюрприз!', title, sub || ''); sfx('party'); }
+function sparkleAt(x, y){ burst(x, y, 18, ['#fff3a8','#ffd24a','#ffffff'], {v:120, spread:6.3, g:60, kind:'leaf', life:1.2}); }
+const DSAYS = [];
+function decorSay(d, text, dur, delay){ DSAYS.push({xn:d.xn, yn:d.yn, say:text, sayT:dur, delay:delay || 0, sc:1.1*(d.s || 1)*1.28}); }
+function achUi(){
+  const box = $('achBox'); if (!box) return;
+  box.hidden = !S.ach.length;
+  $('achList').innerHTML = S.ach.map(a => '<span class="chip">★ ' + a + '</span>').join('');
+}
+function countTap(key){ S.taps[key] = (S.taps[key] || 0) + 1; dirty = true; return S.taps[key] === 15 && !S.done[key] ? (S.done[key] = true) : false; }
+function tapDecor(d){
+  sfx('tap'); const t = d.type, k = u*ds(d.yn)*1.1*(d.s || 1);
+  if (t === 'boat'){
+    boatBoost = 1.5; S.taps.boat = (S.taps.boat || 0) + 1; dirty = true;
+    if (S.taps.boat === 5 && !S.boatRide){ S.boatRide = true; setTarget({kind:'ride', d}); return; }
+  }
+  if ((t === 'cat' || t === 'lamp' || t === 'bridge') && countTap(t)){
+    if (t === 'cat'){ d.s = 2; decorSay(d, 'Теперь меня видят все!', 5, 3.1); achieve('Исследователь', 'Чеширский кот вырос вдвое — теперь его улыбку видно из любого уголка парка!'); }
+    if (t === 'lamp'){
+      for (let i = 0; i < 2; i++){ const px = clamp(d.xn + (i ? .22 : -.22), .05, .95), py = clamp(d.yn + .12, 0, 1), f = findFree('lamp', px, py) || {xn:px, yn:py}; S.decor.push({type:'lamp', xn:f.xn, yn:f.yn}); }
+      surprise('Светло как днём', 'Фонарей стало три — теперь в парке не страшно гулять и вечером');
+    }
+    if (t === 'bridge'){ d.s = 1.5; surprise('Мостик-богатырь', 'Мостик вырос в полтора раза — теперь по нему пройдёт хоть слон!'); }
+    sparkleAt(X(d.xn), Y(d.yn) - 30*k); return;
+  }
+  toast(DECOR_TAP[t] || '');
+}
+function tapSun(){
+  sunPulse = .35; sfx('tap');
+  if (countTap('sun')){
+    [[.3, .86, '#e0483c'], [.7, .86, '#58ade0']].forEach(q => { const f = findFree('hammock', q[0], q[1]) || {xn:q[0], yn:q[1]}; S.decor.push({type:'hammock', xn:f.xn, yn:f.yn, col:q[2]}); });
+    surprise('Солнечный подарок', 'Солнце подарило парку два гамака — время отдохнуть!');
+  }
+}
+function tapSignEgg(){
+  if (countTap('sign')) achieve('Житель города Видное', 'Вокруг парка зажглась дорожка с гирляндами — Видное сияет!');
+  else toast('Добро пожаловать в Парки Видного!');
+  sfx('tap');
+}
+function sunGeom(){ return {x:W*.8, y:Math.max(gTop*.5, 90), r:24*u}; }
+// Дорожка по периметру с гирляндами «белт-лайт»
+function perimeter(){ return {x0:12, x1:W - 12, y0:Y(-.02), y1:gBot + 2}; }
+function perimPosts(){
+  const r = perimeter(), pts = [], step = Math.max(56, 72*u);
+  const edge = (ax, ay, bx, by) => { const L = Math.hypot(bx - ax, by - ay), n = Math.max(1, Math.round(L/step)); for (let i = 0; i < n; i++) pts.push([ax + (bx - ax)*i/n, ay + (by - ay)*i/n]); };
+  edge(r.x0, r.y0, r.x1, r.y0); edge(r.x1, r.y0, r.x1, r.y1); edge(r.x1, r.y1, r.x0, r.y1); edge(r.x0, r.y1, r.x0, r.y0);
+  return pts;
+}
+function drawPath(){
+  const r = perimeter(), R = 16*u; c.lineJoin = 'round';
+  c.strokeStyle = '#cdbb8d'; c.lineWidth = 12*u; c.beginPath(); c.roundRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, R); c.stroke();
+  c.strokeStyle = '#ecdfbd'; c.lineWidth = 9*u; c.beginPath(); c.roundRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0, R); c.stroke();
+}
+function drawGarlands(front){
+  const pts = perimPosts(), r = perimeter(), n = pts.length, sc = y => .72 + .45*(y - r.y0)/(r.y1 - r.y0);
+  for (let i = 0; i < n; i++){
+    const a = pts[i], b = pts[(i + 1) % n], isFront = a[1] > r.y1 - 1 && b[1] > r.y1 - 1;
+    if (isFront !== front) continue;
+    const ha = 22*u*sc(a[1]), hb = 22*u*sc(b[1]), ax = a[0], ay = a[1] - ha, bx = b[0], by = b[1] - hb;
+    c.strokeStyle = '#2e4a3a'; c.lineWidth = 1.7*u*sc(a[1]); c.lineCap = 'round'; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(ax, ay); c.stroke(); circ(ax, ay, 1.4*u*sc(a[1]), '#2e4a3a');
+    const mx = (ax + bx)/2, my = (ay + by)/2 + 8*u*sc(a[1]);
+    c.strokeStyle = 'rgba(50,50,50,.4)'; c.lineWidth = .8; c.beginPath(); c.moveTo(ax, ay); c.quadraticCurveTo(mx, my, bx, by); c.stroke();
+    for (let j = 1; j < 9; j++){
+      const t = j/9, x = (1-t)*(1-t)*ax + 2*(1-t)*t*mx + t*t*bx, y = (1-t)*(1-t)*ay + 2*(1-t)*t*my + t*t*by + 1.5*u;
+      const tw = .55 + .45*Math.sin(T*4 + i*1.7 + j*1.1), s = sc(y);
+      c.globalAlpha = .55*tw; circ(x, y, 3*u*s, '#ffffff'); c.globalAlpha = 1;
+      circ(x, y, 1.15*u*s, '#ffffff');
+    }
+  }
+}
+
 /* ---------- Нажатия ---------- */
 let started = false;
 function onTap(x, y){
   if (!started || locked) return;
   audio();
   for (const sc of SCOOTS.slice().reverse()){ const b = scootBox(sc); if (x > b.x - b.w/2 && x < b.x + b.w/2 && y > b.top && y < b.y + 10){ popScooter(sc); return; } }
+  for (const q of SQUIRRELS.slice().reverse()){ const b = squirrelBox(q); if (x > b.x - b.w/2 && x < b.x + b.w/2 && y > b.top && y < b.y + 10){ tapSquirrel(q); return; } }
   for (const d of DOGS.slice().reverse()){ const b = dogBox(d); if (x > b.x - b.w/2 && x < b.x + b.w/2 && y > b.top && y < b.y + 10){ explodeDog(d); return; } }
   for (const a of NPCS.slice().reverse()){ if (a.role === 'bbq' && npcHit(a, x, y)){ popBbqMan(a); return; } }
   if (REX){ const b = rexBox(); if (x > b.x - b.w/2 && x < b.x + b.w/2 && y > b.top && y < b.y + 10){ tapRex(); return; } }
+  if (B.ride > 0) return;
+  const sg = sunGeom(); if (Math.hypot(x - sg.x, y - sg.y) < sg.r + 10){ tapSun(); return; }
   const wg = wheelGeom(); if (Math.hypot(x - wg.cx, y - wg.cy) < wg.R + 10){ tapWheel(); return; }
   if (inPond(x, y, 12)){ if (isPark()){ toast('Фонтан и автополив работают — поливать больше не нужно!'); sfx('tap'); return; } setTarget({kind:'refill'}); return; }
   const sorted = S.plants.slice().sort((a,b) => b.yn - a.yn);
@@ -1397,8 +1591,8 @@ function onTap(x, y){
     if (p.helper){ toast('Это растение польёт сотрудник парка'); return; }
     if (p.thirsty){ if (S.water <= 0){ emptyCan(); return; } setTarget({kind:'water', p}); return; }
   }
-  if (inSign(x, y, 0)){ toast('Добро пожаловать в Парки Видного!'); sfx('tap'); return; }
-  for (const d of S.decor.slice().sort((a, b) => b.yn - a.yn)){ if (decorHit(d, x, y)){ toast(DECOR_TAP[d.type]); sfx('tap'); if (d.type === 'boat') boatBoost = 1.5; return; } }
+  if (inSign(x, y, 0)){ tapSignEgg(); return; }
+  for (const d of S.decor.slice().sort((a, b) => b.yn - a.yn)){ if (decorHit(d, x, y)){ tapDecor(d); return; } }
   for (const p of sorted){ if (p.auto && p.stage >= 3 && hit(p, x, y)){ setTarget({kind:'chop', p}); return; } }
   if (y >= gTop + 6 && y <= gBot + 8){
     const xn = XN(x), yn = YN(y);
@@ -1479,15 +1673,19 @@ function update(dt){
   burnt.forEach(p => { const b = plantBox(p); puffFx(b.x, b.y - b.h*.4); removePlant(p); });
   if (started && !locked){
     const tm = S.timers;
-    if ((tm.scoot -= dt) <= 0){ tm.scoot = 60; spawnScooter(); }
-    if ((tm.dog -= dt) <= 0){ tm.dog = 60; spawnDog(); }
-    if ((tm.bbq -= dt) <= 0){ tm.bbq = 300; spawnBbq(); }
+    if ((tm.scoot -= dt) <= 0){ tm.scoot = S.hard ? 20 : 60; spawnScooter(); }
+    if ((tm.dog -= dt) <= 0){ tm.dog = S.hard ? 20 : 60; spawnDog(); }
+    if ((tm.bbq -= dt) <= 0){ tm.bbq = S.hard ? 180 : 360; spawnBbq(); }
+    if ((tm.squirrel -= dt) <= 0){ tm.squirrel = 30; spawnSquirrel(); }
     if ((tm.rex -= dt) <= 0){ tm.rex = 420; spawnRex(); }
     if ((tm.bear -= dt) <= 0){ tm.bear = 600; spawnParade(); }
   }
-  updateWorker(dt); updateKids(dt); updateNpcs(dt); updateCar(dt); updateScooters(dt); updateDogs(dt); updateGrill(dt); updateRex(dt); updateWin(dt);
+  updateWorker(dt); updateKids(dt); updateNpcs(dt); updateCar(dt); updateScooters(dt); updateDogs(dt); updateSquirrels(dt); updateGrill(dt); updateRex(dt); updateWin(dt);
   wheelBoost = Math.max(0, wheelBoost - dt*.35); wheelRot += dt*(.07 + wheelBoost*.9); boatBoost = Math.max(0, boatBoost - dt*.3);
   if (B.sayT > 0){ B.sayT -= dt; if (B.sayT <= 0) B.say = null; }
+  for (let i = DSAYS.length - 1; i >= 0; i--){ if (DSAYS[i].delay > 0){ DSAYS[i].delay -= dt; continue; } DSAYS[i].sayT -= dt; if (DSAYS[i].sayT <= 0) DSAYS.splice(i, 1); }
+  if (B.ride > 0){ B.ride -= dt; boatBoost = Math.max(boatBoost, 2); if (B.ride <= 0){ B.ride = 0; B.hidden = false; } }
+  sunPulse = Math.max(0, sunPulse - dt*1.2);
   if (started){ S.playT += dt; if (S.playT >= HELP_EVERY_SEC){ S.playT -= HELP_EVERY_SEC; gainHelp('за 5 минут в парке'); } }
   for (let i = P.length - 1; i >= 0; i--){ const q = P[i]; q.life -= dt; if (q.life <= 0){ P.splice(i,1); continue; } q.vy += q.g*dt; q.x += q.vx*dt; q.y += q.vy*dt; q.rot += dt*4; }
   if (marker) marker.t += dt;
@@ -1524,7 +1722,7 @@ const clouds = [{x:.08,y:.25,s:1,v:.010},{x:.52,y:.05,s:.8,v:.007},{x:.86,y:.5,s
 function drawSky(){
   const g = c.createLinearGradient(0, 0, 0, gTop); g.addColorStop(0, '#8fcdea'); g.addColorStop(1, '#dff2f2');
   c.fillStyle = g; c.fillRect(0, 0, W, gTop + 4);
-  const sx = W*.8, sy = Math.max(gTop*.5, 90), sr = 24*u;
+  const sx = W*.8, sy = Math.max(gTop*.5, 90), sr = 24*u*(1 + sunPulse*Math.abs(Math.sin(T*18)));
   c.save(); c.translate(sx, sy); c.rotate(RM ? 0 : T*.15); c.strokeStyle = 'rgba(247,196,64,.55)'; c.lineWidth = 3*u; c.lineCap = 'round';
   for (let i = 0; i < 10; i++){ c.rotate(Math.PI/5); c.beginPath(); c.moveTo(sr + 6*u, 0); c.lineTo(sr + 14*u, 0); c.stroke(); }
   c.restore(); circ(sx, sy, sr, '#f7c440'); circ(sx - sr*.25, sy - sr*.25, sr*.55, '#fbd968');
@@ -1625,7 +1823,7 @@ function drawSign(){
 function inSign(x, y, pad){ const s = signGeom(); return x > s.x - s.w/2 - pad && x < s.x + s.w/2 + pad && y > s.top - pad && y < s.y + pad; }
 const BOY_LOOK = {scale:1.25, legs:'#f2c49c', shoes:'#5a3b2a', shorts:'#3f6fb5', shirt:'#f2b33d', stripe:'#e2892f', cap:'#3e8e4a', visor:'#2f7039', can:'#2f8fd6', canHi:'#7fc0ee'};
 const WORKER_LOOK = {scale:1.6, adult:true, legs:'#2a5e36', shoes:'#2b2b28', shorts:'#2a5e36', shirt:'#3a8a48', stripe:'#e4ee5c', sleeve:'#347d41', cap:'#2f7039', visor:'#24592d', capDot:'#e4ee5c', vest:true, mustache:true, can:'#f08a2c', canHi:'#f8c38d'};
-const DIRECTOR_LOOK = {scale:1.66, adult:true, legs:'#5d93cc', shoes:'#1f1f1f', shorts:'#5d93cc', shirt:'#6fa8dc', sleeve:'#6fa8dc', shortHair:'#3b2a20', tie:'#c0392b', stubble:true};
+const DIRECTOR_LOOK = {scale:1.66, adult:true, legs:'#5d93cc', shoes:'#1f1f1f', shorts:'#5d93cc', shirt:'#6fa8dc', sleeve:'#6fa8dc', neatHair:'#3b2a20', tie:'#c0392b', stubble:true};
 const GRANNY_LOOK = {scale:1.5, adult:true, wide:1.5, legs:'#f2c49c', shoes:'#6d4a30', shorts:'#8e5aa8', longSkirt:true, shirt:'#8e5aa8', sleeve:'#8e5aa8', apron:'#f3e3c3', platok:'#d9412f', glasses:true};
 const POLICE_LOOK = {scale:1.62, adult:true, legs:'#1f2c4f', shoes:'#111111', shorts:'#1f2c4f', shirt:'#2c3e6b', sleeve:'#2c3e6b', policeCap:true, badge:true};
 function drawPerson(M, L){
@@ -1673,6 +1871,12 @@ function drawPerson(M, L){
   if (L.stubble){ c.fillStyle = 'rgba(70,60,55,.3)'; c.beginPath(); c.arc(hx + 1*k, hy + 1.2*k, 7.7*k, .05, Math.PI*.9); c.closePath(); c.fill(); }
   if (L.girl){ c.fillStyle = L.hair; c.beginPath(); c.arc(hx, hy - .5*k, 9*k, Math.PI*.95, Math.PI*2.02); c.fill(); circ(hx - 8.5*k, hy + 1*k, 3.6*k, L.hair); circ(hx - 7*k, hy + 5*k, 2.8*k, L.hair); if (L.bow && !L.bigBow) circ(hx - 5*k, hy - 7*k, 2*k, L.bow);
     if (L.bigBow){ c.fillStyle = L.bow; c.beginPath(); c.moveTo(hx - 3*k, hy - 9*k); c.lineTo(hx - 8*k, hy - 12.5*k); c.lineTo(hx - 8*k, hy - 5.5*k); c.closePath(); c.moveTo(hx - 3*k, hy - 9*k); c.lineTo(hx + 2*k, hy - 12.5*k); c.lineTo(hx + 2*k, hy - 5.5*k); c.closePath(); c.fill(); circ(hx - 3*k, hy - 9*k, 1.5*k, L.bow); } }
+  else if (L.neatHair){                                   // аккуратная короткая стрижка
+    c.fillStyle = L.neatHair; c.beginPath(); c.arc(hx, hy - .2*k, 8.8*k, Math.PI*1.04, Math.PI*1.96);
+    c.quadraticCurveTo(hx + 1*k, hy - 6.2*k, hx - 8.6*k, hy - 1.2*k); c.closePath(); c.fill();
+    ell(hx - 6.6*k, hy - .2*k, 2*k, 3.2*k, L.neatHair);
+    c.strokeStyle = 'rgba(255,255,255,.18)'; c.lineWidth = .7*k; c.beginPath(); c.moveTo(hx - 2*k, hy - 8.4*k); c.quadraticCurveTo(hx + 1.5*k, hy - 7.6*k, hx + 4.5*k, hy - 6.8*k); c.stroke();
+  }
   else if (L.shortHair){ c.fillStyle = L.shortHair; c.beginPath(); c.arc(hx, hy - .3*k, 8.9*k, Math.PI, Math.PI*2); c.fill(); ell(hx - 5.6*k, hy - .6*k, 3.6*k, 5*k, L.shortHair); ell(hx + 3*k, hy - 7.6*k, 5*k, 2*k, L.shortHair); }
   else if (L.policeCap){ c.fillStyle = '#1f2c4f'; c.beginPath(); c.roundRect(hx - 9.8*k, hy - 13*k, 19.6*k, 6.4*k, 2.4*k); c.fill(); c.fillRect(hx - 8*k, hy - 8*k, 16*k, 3*k); c.fillStyle = '#c0392b'; c.fillRect(hx - 8.4*k, hy - 7.6*k, 16.8*k, 2.4*k); ell(hx + 8*k, hy - 4.6*k, 4.6*k, 1.4*k, '#111111'); circ(hx + 3*k, hy - 9.6*k, 1.4*k, '#e8c547'); }
   else if (L.cap){ c.fillStyle = L.cap; c.beginPath(); c.arc(hx, hy - 1*k, 8.9*k, Math.PI, 0); c.fill(); ell(hx + 8*k, hy - 1.6*k, 5*k, 1.8*k, L.visor); if (L.capDot) circ(hx - 1*k, hy - 5.5*k, 1.6*k, L.capDot); }
@@ -1752,6 +1956,13 @@ function drawParticles(){
   for (const q of P){
     const a = Math.min(1, q.life/q.max*1.6); c.globalAlpha = a;
     if (q.kind === 'text'){ c.fillStyle = q.col; c.font = '700 ' + Math.round(20*u) + 'px "Balsamiq Sans", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'; c.fillText(q.text, q.x, q.y); }
+    else if (q.kind === 'smile'){
+      const r = q.r*(1 + Math.min(.3, (1 - q.life/q.max)*1.5));
+      circ(q.x, q.y, r, '#ffd23f'); c.strokeStyle = '#e0a800'; c.lineWidth = 1.4*u; c.beginPath(); c.arc(q.x, q.y, r, 0, Math.PI*2); c.stroke();
+      circ(q.x - r*.33, q.y - r*.22, r*.1, '#3b2a20'); circ(q.x + r*.33, q.y - r*.22, r*.1, '#3b2a20');
+      c.strokeStyle = '#3b2a20'; c.lineWidth = 1.5*u; c.lineCap = 'round'; c.beginPath(); c.arc(q.x, q.y + r*.02, r*.52, .2*Math.PI, .8*Math.PI); c.stroke();
+      circ(q.x - r*.55, q.y + r*.2, r*.13, 'rgba(240,120,110,.5)'); circ(q.x + r*.55, q.y + r*.2, r*.13, 'rgba(240,120,110,.5)');
+    }
     else if (q.kind === 'smoke'){ const t = 1 - q.life/q.max; c.globalAlpha = .45*(q.life/q.max); circ(q.x, q.y, q.r*(1 + t*2.6), q.col); }
     else if (q.kind === 'ring'){ c.strokeStyle = q.col; c.lineWidth = 3*u*(q.life/q.max); c.beginPath(); c.arc(q.x, q.y, q.r + (1 - q.life/q.max)*34*u, 0, Math.PI*2); c.stroke(); }
     else if (q.kind === 'leaf'){ c.save(); c.translate(q.x, q.y); c.rotate(q.rot); ell(0, 0, q.r*1.4, q.r*.7, q.col); c.restore(); }
@@ -1762,8 +1973,10 @@ function drawParticles(){
 function draw(){
   c.setTransform(DPR,0,0,DPR,0,0);
   drawSky(); drawWheel(); drawClouds();
-  if (land) c.drawImage(land, 0, 0, W, H);
+  if (land && land.width > 0 && land.height > 0) c.drawImage(land, 0, 0, W, H);
+  if (S.done.sign) drawPath();
   if (isPark()) drawFountain(); else drawPond();
+  if (S.done.sign) drawGarlands(false);
   if (marker && B.target){
     const mx = X(marker.xn), my = Y(marker.yn), k = u*ds(marker.yn), pulse = (marker.t*1.6) % 1;
     c.strokeStyle = 'rgba(255,255,255,' + (0.9 - pulse*.6) + ')'; c.lineWidth = 2.2*k;
@@ -1777,21 +1990,28 @@ function draw(){
   NPCS.forEach(a => list.push({y:Y(a.yn) + .6, npc:a}));
   SCOOTS.forEach(sc => list.push({y:Y(sc.yn) + .3, scoot:sc}));
   DOGS.forEach(d => list.push({y:Y(d.yn) + .2, dog:d}));
+  SQUIRRELS.forEach(q => list.push({y:Y(q.yn) + .15, squirrel:q}));
   if (GRILL && GRILL.placed) list.push({y:Y(GRILL.yn) + .1, grill:true});
   if (REX) list.push({y:Y(REX.yn) + .5, rex:true});
   S.decor.forEach(d => list.push({y:Y(d.yn) - .1, decor:d}));
   if (CAR && CAR.phase !== 'gone') list.push({y:Y(CAR.yn) + 1, car:true});
   list.sort((a,b) => a.y - b.y);
-  for (const e of list){ if (e.boy) drawBoy(); else if (e.worker) drawPerson(WK, WORKER_LOOK); else if (e.kid) drawPerson(e.kid, e.kid.look); else if (e.npc) drawPerson(e.npc, e.npc.look); else if (e.decor) drawDecor(e.decor); else if (e.car) drawCar(); else if (e.scoot) drawScooter(e.scoot); else if (e.dog) drawDog(e.dog); else if (e.grill) drawGrill(); else if (e.rex) drawRex(); else if (e.sign) drawSign(); else drawPlant(e.p); }
+  for (const e of list){ if (e.boy) drawBoy(); else if (e.worker) drawPerson(WK, WORKER_LOOK); else if (e.kid) drawPerson(e.kid, e.kid.look); else if (e.npc) drawPerson(e.npc, e.npc.look); else if (e.decor) drawDecor(e.decor); else if (e.car) drawCar(); else if (e.scoot) drawScooter(e.scoot); else if (e.dog) drawDog(e.dog); else if (e.squirrel) drawSquirrel(e.squirrel); else if (e.grill) drawGrill(); else if (e.rex) drawRex(); else if (e.sign) drawSign(); else drawPlant(e.p); }
   if (!isPark()) for (const p of S.plants) if (p.thirsty && p.growT <= 0) drawBubble(p);
+  if (S.done.sign) drawGarlands(true);
   drawButterflies(); drawBirds();
-  NPCS.forEach(a => drawSay(a, a.look)); SCOOTS.forEach(sc => drawSay(sc.r1, sc.r1.look)); if (REX) drawSay(REX, REX_LOOK); drawSay(B, BOY_LOOK);
+  NPCS.forEach(a => drawSay(a, a.look)); SCOOTS.forEach(sc => drawSay(sc.r1, sc.r1.look)); if (REX) drawSay(REX, REX_LOOK); DSAYS.forEach(m => { if (!(m.delay > 0)) drawSay(m, {scale:m.sc}); }); drawSay(B, BOY_LOOK);
   drawParticles();
 }
 
 /* ---------- Цикл ---------- */
 let last = 0;
-function frame(now){ const dt = Math.min(.05, last ? (now - last)/1000 : 0); last = now; update(dt); draw(); requestAnimationFrame(frame); }
+function frame(now){
+  requestAnimationFrame(frame);                      // следующий кадр — всегда, даже если в этом что-то пошло не так
+  const dt = Math.min(.05, last ? (now - last)/1000 : 0); last = now;
+  if (cv.clientWidth > 0 && (Math.abs(cv.clientWidth - W) > 1 || Math.abs(cv.clientHeight - H) > 1)) layout();
+  try { update(dt); draw(); } catch (e) { if (window.console) console.warn(e); }
+}
 
 /* ---------- Кнопки ---------- */
 $('playBtn').textContent = hadSave ? 'Продолжить' : 'Играть';
@@ -1804,11 +2024,11 @@ $('resumeBtn').addEventListener('click', () => { $('help').hidden = true; starte
 let armed = false;
 function resetArm(on){ armed = on; const r = $('resetBtn'); r.textContent = on ? 'Точно стереть весь сад? Нажми ещё раз' : 'Начать заново'; r.classList.toggle('danger', on); }
 function newGame(){
-  const hard = S.hard, sound = S.sound;
-  S = fresh(); S.hard = hard; S.sound = sound; S.water = waterMax(); S.tips.start = 1;
+  const hard = S.hard, sound = S.sound, ach = S.ach || [], ride = !!S.boatRide;
+  S = fresh(); S.hard = hard; S.sound = sound; S.ach = ach; S.boatRide = ride;   // ачивки и катание на лодочке — навсегда S.water = waterMax(); S.tips.start = 1;
   B.xn = .5; B.yn = .55; B.target = B.queued = B.act = null; B.hidden = false; B.follow = null; B.say = null;
-  marker = null; P.length = 0; WK.active = false; WK.queue = []; WK.cur = null; WK.act = null; KIDS.length = 0; NPCS.length = 0; CAR = null; locked = false; SCOOTS.length = 0; DOGS.length = 0; GRILL = null; REX = null; winT = 0; B.dance = null;
-  save(); hud(); refreshSeeds(); helperHud();
+  marker = null; P.length = 0; WK.active = false; WK.queue = []; WK.cur = null; WK.act = null; KIDS.length = 0; NPCS.length = 0; CAR = null; locked = false; SCOOTS.length = 0; DOGS.length = 0; SQUIRRELS.length = 0; GRILL = null; REX = null; winT = 0; B.dance = null;
+  save(); hud(); refreshSeeds(); helperHud(); achUi(); B.ride = 0;
 }
 $('resetBtn').addEventListener('click', () => {
   if (!armed){ resetArm(true); return; }
@@ -1818,18 +2038,17 @@ $('resetBtn').addEventListener('click', () => {
 $('againBtn').addEventListener('click', () => { newGame(); $('over').hidden = true; started = true; toast('Новый сад! Нажми на траву'); });
 $('winAgainBtn').addEventListener('click', () => { newGame(); $('win').hidden = true; started = true; toast('Новый сад! Нажми на траву'); });
 function diffUi(){
-  $('diffNormal').setAttribute('aria-pressed', String(!S.hard)); $('diffHard').setAttribute('aria-pressed', String(!!S.hard));
-  $('diffNote').textContent = S.hard ? 'В лейке всего 3 капли — к пруду придётся ходить чаще' : 'В лейке 6 капель';
+  document.querySelectorAll('[data-diff]').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.diff === '1') === !!S.hard)));
+  document.querySelectorAll('.diff-note').forEach(n => n.textContent = S.hard ? 'В лейке всего 3 капли — к пруду придётся ходить чаще' : 'В лейке 6 капель');
 }
-function setDiff(hard){ S.hard = hard; S.water = hard ? Math.min(S.water, 3) : (S.water >= 3 ? 6 : S.water); dirty = true; diffUi(); hud(); sfx('tap'); }
-$('diffNormal').addEventListener('click', () => setDiff(false));
-$('diffHard').addEventListener('click', () => setDiff(true));
+function setDiff(hard){ S.hard = hard; if (hard){ const tm = S.timers; tm.scoot = Math.min(tm.scoot, 20); tm.dog = Math.min(tm.dog, 20); tm.bbq = Math.min(tm.bbq, 180); } S.water = hard ? Math.min(S.water, 3) : (S.water >= 3 ? 6 : S.water); dirty = true; diffUi(); hud(); sfx('tap'); }
+document.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => setDiff(b.dataset.diff === '1')));
 $('soundBtn').addEventListener('click', () => { S.sound = !S.sound; dirty = true; soundIcon(); if (S.sound){ audio(); sfx('tap'); } });
 document.addEventListener('visibilitychange', () => { if (document.hidden && dirty) save(); });
 window.addEventListener('pagehide', () => { if (dirty) save(); });
 
 /* ---------- Старт ---------- */
-buildSeeds(); soundIcon(); layout(); ensureDecor(); hud(); helperHud(); diffUi(); if (isPark()) startParty();
+buildSeeds(); soundIcon(); layout(); ensureDecor(); hud(); helperHud(); diffUi(); achUi(); if (isPark()) startParty();
 if (S.over){ $('intro').hidden = true; $(S.over === 'win' ? 'win' : 'over').hidden = false; }
 $('helperBtn').addEventListener('click', callHelper);
 window.addEventListener('resize', layout);
